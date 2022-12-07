@@ -1,5 +1,5 @@
 import { IconProps } from '@chakra-ui/react';
-import { ReactComponentElement, ReactNode } from 'react';
+import { FaWrench, FaBox } from "react-icons/fa";
 
 import { HomeIcon } from '../components/Icon/Icons';
 
@@ -7,25 +7,43 @@ import { HomeIcon } from '../components/Icon/Icons';
 export type RoutePath = {
     path: string
     name: string
-    icon?: string | React.FC<IconProps>
-    category: boolean
-    collapse: boolean
+    icon?: string | React.FC<IconProps> | any
+    category?: boolean
+    collapse?: boolean
     routes?: RoutePath[]
 }
 
 const routePaths: RoutePath[] = [
     {
-        path: "/",
-        name: "Home",
+        path: "/dashboard",
+        name: "Dashboard",
         icon: HomeIcon,
-        category: false,
-        collapse: true,
+    },
+    {
+        path: "/maintenance",
+        name: "MANUTENÇÃO",
+        icon: FaWrench,
+        category: true,
         routes: [
             {
-                path: "/products",
-                name: "Products",
-                category: false,
-                collapse: false,
+                path: "/maintenance/products",
+                name: "Produtos",
+                icon: FaBox,
+                collapse: true,
+                routes: [
+                    {
+                        path: '/maintenance/products',
+                        name: 'Cadastro',
+                    },
+                    {
+                        path: '/maintenance/products/groups',
+                        name: 'Grupos'
+                    },
+                    {
+                        path: '/maintenance/products/types',
+                        name: 'Tipos'
+                    },
+                ]
             }
         ]
     },

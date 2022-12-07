@@ -1,14 +1,9 @@
 import { Text, useColorModeValue } from '@chakra-ui/react';
 import { Fragment } from 'react';
 
-import { RoutePath } from '../../../app/routesPaths';
-import SidebarLink from './SidebarLink';
+import SidebarLink, { SidebarLinkProps } from './SidebarLink';
 
-type SidebarLinkCategoryProps = {
-    route: RoutePath
-};
-
-const SidebarLinkCategory: React.FC<SidebarLinkCategoryProps> = ({ route }) => {
+const SidebarLinkCategory: React.FC<SidebarLinkProps> = ({ route }) => {
     const activeColor = useColorModeValue("gray.700", "white");
 
     return (

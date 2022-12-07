@@ -1,3 +1,4 @@
+import { PhoneIcon } from '@chakra-ui/icons';
 import {
     Accordion,
     AccordionButton,
@@ -8,25 +9,20 @@ import {
     Flex,
     HStack,
     Icon,
+    Link,
     List,
+    ListItem,
     Text,
     useColorModeValue,
 } from '@chakra-ui/react';
 import { FaCircle } from 'react-icons/fa';
 
-import { RoutePath } from '../../../app/routesPaths';
 import useRoutePathInfo from '../../../hooks/useRoutePathInfo';
 import IconBox from '../../Icon/IconBox';
-import { HomeIcon } from '../../Icon/Icons';
-import SidebarLink from './SidebarLink';
-import SidebarLinkAccordion from './SidebarLinkAccordion';
-import { PhoneIcon, AddIcon, WarningIcon } from '@chakra-ui/icons'
+import SidebarLink, { SidebarLinkProps } from './SidebarLink';
 
-type SidebarLinkCollapseProps = {
-    route: RoutePath
-};
 
-const SidebarLinkCollapse: React.FC<SidebarLinkCollapseProps> = ({ route }) => {
+const SidebarLinkCollapse: React.FC<SidebarLinkProps> = ({ route }) => {
     const activeBg = useColorModeValue("teal.300", "teal.300");
     const activeAccordionBg = useColorModeValue("white", "gray.700");
     const inactiveBg = useColorModeValue("white", "gray.700");
@@ -37,7 +33,13 @@ const SidebarLinkCollapse: React.FC<SidebarLinkCollapseProps> = ({ route }) => {
     const sidebarActiveShadow = "0px 7px 11px rgba(0, 0, 0, 0.04)";
 
     const routePathInfo = useRoutePathInfo(route);
-    const RouteIcon = typeof route.icon === 'string' ? <Icon name={route.icon} /> : <PhoneIcon />;
+    const RouteIcon =
+        typeof route.icon === "string" ? (
+            <Icon>{route.icon}</Icon>
+        ) : (
+            <Icon as={route.icon} />
+        );
+
     return (
         <Accordion allowToggle>
             <AccordionItem border="none">
@@ -150,7 +152,7 @@ const SidebarLinkCollapse: React.FC<SidebarLinkCollapseProps> = ({ route }) => {
                             borderRadius="15px"
                             w="100%"
                             _hover={{
-                                display: 'none'
+                                bg: 'none'
                             }}
                             _active={{
                                 bg: "inherit",
@@ -222,12 +224,38 @@ const SidebarLinkCollapse: React.FC<SidebarLinkCollapseProps> = ({ route }) => {
                         {
                             route.icon
                                 ? <>{route.routes?.map(subroute => <SidebarLink route={subroute} key={route.name} />)}</>
-                                : <>{route.routes?.map(subroute => <SidebarLinkAccordion route={subroute} key={route.name} />)}</>
+                                : <>{route.routes?.map(subroute => <LinkAccordionItem route={subroute} key={route.name} />)}</>
                         }
                     </List>
                 </AccordionPanel>
             </AccordionItem>
         </ Accordion>
+    );
+}
+
+const LinkAccordionItem: React.FC<SidebarLinkProps> = ({ route }) => {
+    const activeColor = useColorModeValue("gray.700", "white");
+    const inactiveColor = useColorModeValue("gray.400", "gray.400");
+    const routePathInfo = useRoutePathInfo(route);
+
+    return (
+        <Link href={route.path}>
+            <ListItem pt="5px" ms="26px">
+                <Text
+                    color={
+                        routePathInfo.isActive
+                            ? activeColor
+                            : inactiveColor
+                    }
+                    fontWeight={
+                        routePathInfo.isActive ? "bold" : "normal"
+                    }
+                    fontSize="sm"
+                >
+                    {route.name}
+                </Text>
+            </ListItem>
+        </Link>
     );
 }
 
