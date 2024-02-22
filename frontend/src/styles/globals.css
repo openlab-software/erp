@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./button.css";
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+  }
+} */
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background-color: #eeeeee;
+}
+
+main {
+  height: 100vh;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+}
