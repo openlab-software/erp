@@ -1,0 +1,12 @@
+.bp5-tree-node-content {
+  height: 2.5rem !important;
+}
+
+.bp5-tree-node-content:hover {
+  background-color: #0085f210 !important;
+  color: #0085f2;
+
+  .bp5-icon {
+    color: #0085f2 !important;
+  }
+}

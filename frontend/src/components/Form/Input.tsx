@@ -1,42 +1,48 @@
-import { Label, TextInput, TextInputProps } from "flowbite-react";
+import {
+  FormGroup,
+  FormGroupProps,
+  InputGroup,
+  InputGroupProps,
+} from "@blueprintjs/core";
 import { useField } from "formik";
 import { forwardRef } from "react";
+import { twMerge } from "tailwind-merge";
 
-interface InputProps extends TextInputProps {
+interface InputProps extends InputGroupProps {
   name: string;
   label?: string;
+  formGroup?: FormGroupProps;
 }
 
 const Input: React.ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
   props,
   ref
 ) => {
-  const { name, label, ...textInputProps } = props;
-
+  const { name, label, ...inputProps } = props;
   const [field, meta] = useField(name);
 
   return (
-    <div>
-      <div className="mb-2 block">
-        <Label htmlFor={name} value={label} />
-      </div>
-
-      <TextInput
-        ref={ref}
+    <FormGroup
+      helperText={
+        meta.touched && meta.error ? (
+          <span className="text-red-500">{meta.error}</span>
+        ) : (
+          <span />
+        )
+      }
+      label={label}
+      labelFor={name}
+      labelInfo="(required)"
+    >
+      <InputGroup
         {...field}
-        {...textInputProps}
-        color={
-          meta.touched
-            ? !!meta.error
-              ? "failure"
-              : field.value
-              ? "success"
-              : undefined
-            : undefined
-        }
-        helperText={meta.touched && meta.error && <span>{meta.error}</span>}
+        {...inputProps}
+        inputClassName={twMerge(
+          "",
+          meta.touched ? (meta.error ? "bg-red-50" : "bg-green-50") : undefined
+        )}
       />
-    </div>
+    </FormGroup>
   );
 };
 

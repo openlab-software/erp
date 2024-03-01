@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "normalize.css";
+@import "@blueprintjs/core/lib/css/blueprint.css";
+
 @import "./button.css";
 
 :root {
@@ -13,15 +16,6 @@
     --foreground-rgb: 255, 255, 255;
   }
 } */
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background-color: #eeeeee;
-}
-
-main {
-  height: 100vh;
-}
 
 @layer utilities {
   .text-balance {

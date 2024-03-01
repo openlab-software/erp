@@ -1,8 +1,9 @@
-import { ThemeModeScript } from "flowbite-react";
 import type { Metadata } from "next";
 
 import { Inter } from "next/font/google";
-import Head from "next/head";
+import { twMerge } from "tailwind-merge";
+import Header from "~/components/Layout/Header";
+import Nav from "~/components/Layout/Nav";
 import "~/styles/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -18,12 +19,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <Head>
-        <ThemeModeScript mode="light" />
-      </Head>
-      <body className={inter.className}>
-        <main className="flex justify-center flex-col items-center w-full">
+    <html lang="pt-br">
+      <body
+        className={twMerge(
+          inter.className,
+          "bg-[#fff] dark:text-white overflow-y-hidden"
+        )}
+      >
+        <Header />
+        <aside className="sticky bottom-0 bg-white dark:bg-[#383e47] float-left h-[calc(100vh-80px)] w-[15vw] py-4 border-r border-[rgb(227, 232, 237)] dark:border-[rgba(17,20,24,.4)]">
+          <Nav />
+        </aside>
+        <main className="bg-white dark:bg-[#252a31] flex justify-center flex-col items-center h-[calc(100vh-80px)] overflow-y-auto">
           {children}
         </main>
       </body>
