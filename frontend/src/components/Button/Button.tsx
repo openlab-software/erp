@@ -1,25 +1,27 @@
 "use client";
 
 import { Button as BlueprintButton, ButtonProps } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { forwardRef } from "react";
-import { twMerge } from "tailwind-merge";
 
 const Button: React.ForwardRefRenderFunction<HTMLButtonElement, ButtonProps> = (
   { className, children, ...props },
   ref
 ) => {
   return (
-    <BlueprintButton
-      ref={ref}
-      {...props}
-      className={twMerge(
-        "bg-[#f6f7f9] text-[#1c2127] hover:bg-[#edeff2]",
-        className
-      )}
-    >
+    <StyledButton ref={ref} {...props}>
       {children}
-    </BlueprintButton>
+    </StyledButton>
   );
 };
+
+const StyledButton = styled(BlueprintButton)`
+  background-color: #f6f7f9;
+  color: #1c2127;
+
+  :hover {
+    background-color: #edeff2;
+  }
+`;
 
 export default forwardRef(Button);

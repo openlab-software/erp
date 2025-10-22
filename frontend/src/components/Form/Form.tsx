@@ -1,21 +1,46 @@
-import { useFormikContext } from "formik";
-import { twMerge } from "tailwind-merge";
+import styled from "@emotion/styled";
+import React from "react";
 
-interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {}
+import { FormProvider, useForm } from "react-hook-form";
+
+interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
+  form?: ReturnType<typeof useForm<any>>;
+}
 
 export default function Form(props: FormProps) {
-  const { className = "", ...formProps } = props;
-  const { handleBlur, handleReset, handleSubmit } = useFormikContext();
+  const { form, ...formProps } = props;
+
+  const handleBlur: React.FocusEventHandler<HTMLFormElement> = (event) => {
+    formProps.onBlur?.(event);
+  };
+
+  const handleReset: React.FormEventHandler<HTMLFormElement> = (event) => {
+    formProps.onReset?.(event);
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
+    formProps.onSubmit?.(event);
+  };
+
+  console.log({ form });
 
   return (
-    <form
-      className={twMerge("grid gap-2", className)}
+    <StyledForm
       {...formProps}
       onBlur={handleBlur}
       onReset={handleReset}
       onSubmit={handleSubmit}
     >
-      {props.children}
-    </form>
+      {!!form ? (
+        <FormProvider {...form}>{props.children}</FormProvider>
+      ) : (
+        props.children
+      )}
+    </StyledForm>
   );
 }
+
+const StyledForm = styled.form`
+  display: grid;
+  gap: 0.5rem;
+`;

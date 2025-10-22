@@ -1,6 +1,7 @@
 "use client";
 import { EntityTitle, Switch } from "@blueprintjs/core";
 import { DoughnutChart } from "@blueprintjs/icons";
+import styled from "@emotion/styled";
 import { useEffect } from "react";
 
 export default function Header() {
@@ -16,7 +17,6 @@ export default function Header() {
     }
 
     function handleStorageChange(e: StorageEvent) {
-      console.log({ e });
       setTema("dark" === localStorage.getItem("theme") ? "dark" : "light");
     }
 
@@ -27,7 +27,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-white dark:bg-[#383e47] sticky z-10 w-full top-0 h-[81px] flex p-4 border-b border-[rgb(227, 232, 237)] dark:border-[rgba(17,20,24,.4)] justify-between">
+    <StyledHeader>
       <EntityTitle
         title="patrick.dev.br"
         icon={<DoughnutChart className="text-blue-500" size={20} />}
@@ -42,6 +42,21 @@ export default function Header() {
           window.dispatchEvent(new StorageEvent("storage"));
         }}
       />
-    </header>
+    </StyledHeader>
   );
 }
+
+const StyledHeader = styled.header`
+  background-color: #fff;
+  position: sticky;
+  z-index: 10;
+  width: 100%;
+  height: 81px;
+  top: 0;
+  padding: 1rem;
+  display: flex;
+  border-bottom: solid 1px rgb(227, 232, 237);
+  justify-content: space-between;
+  align-items: center;
+  /* bg-white dark:bg-[#383e47] sticky z-10 w-full top-0 h-[81px] flex p-4 border-b border-[rgb(227, 232, 237)] dark:border-[rgba(17,20,24,.4)] justify-between */
+`;

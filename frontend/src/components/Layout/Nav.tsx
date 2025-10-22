@@ -1,5 +1,3 @@
-"use client";
-
 import { Tree, TreeEventHandler, TreeNodeInfo } from "@blueprintjs/core";
 import { useState } from "react";
 import "./nav.css";

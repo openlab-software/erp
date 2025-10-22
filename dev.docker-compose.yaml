@@ -1,0 +1,67 @@
+version: "3"
+
+services:
+  rabbitmq:
+    container_name: cms_rabbitmq
+    image: rabbitmq:management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: RabbitMQ123!
+  mongo:
+    container_name: cms_mongo
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: Mongo123!
+    ports:
+      - "27017:27017"
+  postgres:
+    container_name: cms_postgres
+    image: postgres:15
+    environment:
+      POSTGRES_DB: cms
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: Postgres123!
+    ports:
+      - "5432:5432"
+  pgadmin:
+    container_name: cms_pgadmin
+    image: dpage/pgadmin4:9
+    depends_on:
+      - postgres
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+  # keycloak_web:
+  #   image: quay.io/keycloak/keycloak:23.0.7
+  #   container_name: keycloak_web
+  #   environment:
+  #     KC_DB: postgres
+  #     KC_DB_URL: jdbc:postgresql://keycloakdb:5432/keycloak
+  #     KC_DB_USERNAME: root
+  #     KC_DB_PASSWORD: password
+
+  #     KC_HOSTNAME: localhost
+  #     KC_HOSTNAME_PORT: 8080
+  #     KC_HOSTNAME_STRICT: false
+  #     KC_HOSTNAME_STRICT_HTTPS: false
+
+  #     KC_LOG_LEVEL: info
+  #     KC_METRICS_ENABLED: true
+  #     KC_HEALTH_ENABLED: true
+  #     KEYCLOAK_ADMIN: admin
+  #     KEYCLOAK_ADMIN_PASSWORD: admin
+  #   command: start-dev
+  #   depends_on:
+  #     - keycloakdb
+  #   ports:
+  #     - 8080:8080

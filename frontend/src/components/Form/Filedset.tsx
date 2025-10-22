@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { forwardRef } from "react";
-import { twMerge } from "tailwind-merge";
 
 interface FiledsetProps
   extends React.FieldsetHTMLAttributes<HTMLFieldSetElement> {
@@ -10,18 +10,22 @@ const Filedset: React.ForwardRefRenderFunction<
   HTMLFieldSetElement,
   FiledsetProps
 > = (props, ref) => {
-  const { legenda, className, ...fieldsetProps } = props;
+  const { legenda, ...fieldsetProps } = props;
 
   return (
-    <fieldset
-      ref={ref}
-      className={twMerge("flex flex-col gap-2 py-4", className)}
-      {...fieldsetProps}
-    >
+    <Fieldset ref={ref} {...fieldsetProps}>
       {!!legenda && <legend className="font-bold">{legenda}</legend>}
       {props.children}
-    </fieldset>
+    </Fieldset>
   );
 };
+
+const Fieldset = styled.fieldset`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+`;
 
 export default forwardRef(Filedset);

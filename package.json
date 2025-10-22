@@ -1,0 +1,22 @@
+{
+    "name": "cms",
+    "private": true,
+    "type": "module",
+    "workspaces": {
+        "packages": [
+            "libs/ts-common",
+            "apps/frontend"
+        ]
+    },
+    "packageManager": "yarn@1.22.22",
+    "engines": {
+        "node": ">=18"
+    },
+    "scripts": {
+        "dev": "turbo run dev",
+        "build": "turbo run build"
+    },
+    "devDependencies": {
+        "turbo": "^2.5.0"
+    }
+}

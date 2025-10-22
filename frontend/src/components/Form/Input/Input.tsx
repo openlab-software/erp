@@ -4,11 +4,12 @@ import {
   InputGroup,
   InputGroupProps,
 } from "@blueprintjs/core";
-import { useField } from "formik";
-import { forwardRef } from "react";
-import { twMerge } from "tailwind-merge";
 
-interface InputProps extends InputGroupProps {
+import styled from "@emotion/styled";
+import { forwardRef } from "react";
+import useInput from "./useInput";
+
+export interface InputProps extends InputGroupProps {
   name: string;
   label?: string;
   formGroup?: FormGroupProps;
@@ -18,8 +19,10 @@ const Input: React.ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
   props,
   ref
 ) => {
-  const { name, label, ...inputProps } = props;
-  const [field, meta] = useField(name);
+  const { name, label, isTouched, ...inputProps } = useInput(props);
+
+  console.log({ isTouched });
+  const meta: any = {};
 
   return (
     <FormGroup
@@ -34,16 +37,21 @@ const Input: React.ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
       labelFor={name}
       labelInfo="(required)"
     >
-      <InputGroup
-        {...field}
+      <StyledInputGroup
+        inputRef={ref}
         {...inputProps}
-        inputClassName={twMerge(
-          "",
-          meta.touched ? (meta.error ? "bg-red-50" : "bg-green-50") : undefined
-        )}
+        isTouched={isTouched}
+        // inputClassName={twMerge(
+        //   "",
+        //   meta.touched ? (meta.error ? "bg-red-50" : "bg-green-50") : undefined
+        // )}
       />
     </FormGroup>
   );
 };
+
+const StyledInputGroup = styled(InputGroup)<{ isTouched: boolean }>`
+  background-color: ${(props) => (props.isTouched ? "red" : "green")};
+`;
 
 export default forwardRef(Input);
