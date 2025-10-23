@@ -1,0 +1,58 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+
+	// _ "github.com/patrickdevbr-portfolio/erp/apps/stock-service/docs"
+	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/application/services"
+	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/amqpevent"
+	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/db"
+	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/rest"
+	"github.com/patrickdevbr-portfolio/erp/libs/go-common/postgres"
+	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
+	httpSwagger "github.com/swaggo/http-swagger"
+)
+
+type application struct {
+	config config
+}
+
+type config struct {
+	addr string
+}
+
+func (app *application) run() error {
+	godotenv.Load(".env.dev")
+	router := mux.NewRouter()
+
+	gormDB, err := postgres.Connect()
+	if err != nil {
+		fmt.Println("postgres", err)
+	}
+
+	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher()
+	if err != nil {
+		fmt.Println("rabbitmq", err)
+	}
+	defer rabbitMQPublisher.Close()
+
+	eventPublisher := amqpevent.NewEventPublisher(rabbitMQPublisher)
+	categoryRepo := db.NewPostgresCategoryRepository(gormDB)
+	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
+
+	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
+
+	v1 := router.PathPrefix("/v1").Subrouter()
+	rest.NewCategoryRest(v1, categorySvc)
+
+	srv := &http.Server{
+		Addr:    app.config.addr,
+		Handler: router,
+	}
+
+	return srv.ListenAndServe()
+}

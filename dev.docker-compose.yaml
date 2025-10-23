@@ -2,7 +2,7 @@ version: "3"
 
 services:
   rabbitmq:
-    container_name: cms_rabbitmq
+    container_name: erp_rabbitmq
     image: rabbitmq:management-alpine
     ports:
       - "5672:5672"
@@ -10,25 +10,17 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: root
       RABBITMQ_DEFAULT_PASS: RabbitMQ123!
-  mongo:
-    container_name: cms_mongo
-    image: mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: Mongo123!
-    ports:
-      - "27017:27017"
   postgres:
-    container_name: cms_postgres
+    container_name: erp_postgres
     image: postgres:15
     environment:
-      POSTGRES_DB: cms
+      POSTGRES_DB: erp
       POSTGRES_USER: root
       POSTGRES_PASSWORD: Postgres123!
     ports:
       - "5432:5432"
   pgadmin:
-    container_name: cms_pgadmin
+    container_name: erp_pgadmin
     image: dpage/pgadmin4:9
     depends_on:
       - postgres
