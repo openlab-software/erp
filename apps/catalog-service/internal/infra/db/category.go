@@ -20,7 +20,7 @@ type PostgresCategoryRepository struct {
 	DB *gorm.DB
 }
 
-func NewPostgresCategoryRepository(db *gorm.DB) *PostgresCategoryRepository {
+func NewPostgresCategoryRepository(db *gorm.DB) category.CategoryRepository {
 	db.AutoMigrate(&categoryEntity{})
 	return &PostgresCategoryRepository{
 		DB: db,
@@ -36,4 +36,21 @@ func (r *PostgresCategoryRepository) Insert(c *category.Category) error {
 	result := r.DB.Create(&entity)
 
 	return result.Error
+}
+
+func (r *PostgresCategoryRepository) Find() []category.Category {
+	var entities []categoryEntity
+	r.DB.Find(&entities)
+
+	categories := make([]category.Category, len(entities))
+	for i, c := range entities {
+		categoryID, _ := category.ParseCategoryID(c.PublicID)
+
+		categories[i] = category.Category{
+			CategoryID:  categoryID,
+			Description: c.Description,
+		}
+	}
+
+	return categories
 }

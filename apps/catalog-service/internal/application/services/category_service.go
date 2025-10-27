@@ -22,3 +22,7 @@ func (svc *CategoryServiceImpl) Create(c *category.Category) error {
 	err := svc.repository.Insert(c)
 	return err
 }
+
+func (svc *CategoryServiceImpl) GetCategories() []category.Category {
+	return svc.repository.Find()
+}

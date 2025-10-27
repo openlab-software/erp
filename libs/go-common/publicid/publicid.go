@@ -11,31 +11,17 @@ import (
 type PublicID string
 
 func (id PublicID) ToPublic() string {
-	return strings.Split(string(id), "_")[1]
+	fmt.Println(strings.Split(string(id), ".")[1])
+	return strings.Split(string(id), ".")[1]
 }
 
 func New(prefix string) PublicID {
-	return PublicID(fmt.Sprintf("%s_%s", prefix, uuid.New().String()))
-}
-
-func Parse(prefix string, s string) (PublicID, error) {
-	if !strings.HasPrefix(s, prefix) {
-		return "", errors.New("invalid id prefix")
-	}
-	idWithoutPrefix, ok := strings.CutPrefix(s, fmt.Sprintf("%s_", prefix))
-	if !ok {
-		return "", errors.New("invalid id")
-	}
-	if _, err := uuid.Parse(idWithoutPrefix); err != nil {
-		return "", errors.New("invalid id")
-	}
-
-	return PublicID(s), nil
+	return PublicID(fmt.Sprintf("%s.%s", prefix, uuid.New().String()))
 }
 
 func ParsePublic(prefix string, withoutPrefix string) (PublicID, error) {
 	if _, err := uuid.Parse(withoutPrefix); err != nil {
 		return "", errors.New("invalid id")
 	}
-	return PublicID(fmt.Sprintf("%s_%s", prefix, withoutPrefix)), nil
+	return PublicID(fmt.Sprintf("%s.%s", prefix, withoutPrefix)), nil
 }

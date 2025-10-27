@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/publicid"
 )
 
 type createCategoryDTO struct {
@@ -15,14 +14,24 @@ type createCategoryDTO struct {
 
 type categoryDTO struct {
 	audit.Audit
-	CategoryID string `json:"category_id"`
+	CategoryID  string `json:"category_id"`
+	Description string `json:"description"`
 }
 
 func toCategoryDTO(c *category.Category) categoryDTO {
 	return categoryDTO{
-		CategoryID: publicid.PublicID(c.CategoryID).ToPublic(),
-		Audit:      c.Audit,
+		CategoryID:  c.CategoryID.ToPublic(),
+		Description: c.Description,
+		Audit:       c.Audit,
 	}
+}
+
+func toCategoriesDTO(categories []category.Category) *[]categoryDTO {
+	dtos := make([]categoryDTO, len(categories))
+	for i, c := range categories {
+		dtos[i] = toCategoryDTO(&c)
+	}
+	return &dtos
 }
 
 type CategoryRest struct {
@@ -37,6 +46,7 @@ func NewCategoryRest(r *mux.Router, categoryService category.CategoryService) {
 	categoryRouter := r.PathPrefix("/categories").Subrouter()
 
 	categoryRouter.HandleFunc("", categoryRest.createCategory).Methods("POST")
+	categoryRouter.HandleFunc("", categoryRest.getCategories).Methods("GET")
 }
 
 func (cr *CategoryRest) createCategory(w http.ResponseWriter, r *http.Request) {
@@ -53,4 +63,10 @@ func (cr *CategoryRest) createCategory(w http.ResponseWriter, r *http.Request) {
 	cr.categorySvc.Create(&c)
 
 	writeJSON(w, http.StatusCreated, toCategoryDTO(&c))
+}
+
+func (cr *CategoryRest) getCategories(w http.ResponseWriter, r *http.Request) {
+	categories := cr.categorySvc.GetCategories()
+
+	writeJSON(w, http.StatusOK, toCategoriesDTO(categories))
 }
