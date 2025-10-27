@@ -41,12 +41,13 @@ func (app *application) run() error {
 	defer rabbitMQPublisher.Close()
 
 	eventPublisher := amqpevent.NewEventPublisher(rabbitMQPublisher)
-	categoryRepo := db.NewPostgresCategoryRepository(gormDB)
-	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
 
 	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
 
 	v1 := router.PathPrefix("/v1").Subrouter()
+
+	categoryRepo := db.NewPostgresCategoryRepository(gormDB)
+	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
 	rest.NewCategoryRest(v1, categorySvc)
 
 	srv := &http.Server{

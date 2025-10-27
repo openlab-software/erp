@@ -27,11 +27,12 @@ func unprocessableEntity(w http.ResponseWriter, err error) error {
 	return writeJSON(w, http.StatusBadRequest, map[string]any{"message": err.Error()})
 }
 
-func readJSON(w http.ResponseWriter, r *http.Request, v any) error {
+func readJSON(w http.ResponseWriter, r *http.Request, v interface{}) bool {
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]any{"err": err})
-		return err
+		return false
 	}
 	defer r.Body.Close()
-	return nil
+
+	return validateStruct(v, w)
 }

@@ -50,7 +50,7 @@ func NewProductRest(r *mux.Router, productService product.ProductService) {
 
 func (pr *ProductRest) createProduct(w http.ResponseWriter, r *http.Request) {
 	var dto createProductDTO
-	if err := readJSON(w, r, &dto); err != nil {
+	if !readJSON(w, r, &dto) {
 		return
 	}
 

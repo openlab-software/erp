@@ -9,7 +9,7 @@ import (
 )
 
 type createCategoryDTO struct {
-	Description string `json:"description"`
+	Description string `json:"description" validate:"required"`
 }
 
 type categoryDTO struct {
@@ -47,26 +47,40 @@ func NewCategoryRest(r *mux.Router, categoryService category.CategoryService) {
 
 	categoryRouter.HandleFunc("", categoryRest.createCategory).Methods("POST")
 	categoryRouter.HandleFunc("", categoryRest.getCategories).Methods("GET")
+	categoryRouter.HandleFunc("/{id}", categoryRest.deleteCategory).Methods("DELETE")
 }
 
 func (cr *CategoryRest) createCategory(w http.ResponseWriter, r *http.Request) {
 	var dto createCategoryDTO
-	if err := readJSON(w, r, &dto); err != nil {
+	if !readJSON(w, r, &dto) {
 		return
 	}
 
-	c := category.Category{
-		CategoryID:  category.NewCategoryID(),
-		Description: dto.Description,
+	categoryCreated, err := cr.categorySvc.Create(&category.CreateCategoryPayload{Description: dto.Description})
+	if err != nil {
+		unprocessableEntity(w, err)
+		return
 	}
 
-	cr.categorySvc.Create(&c)
-
-	writeJSON(w, http.StatusCreated, toCategoryDTO(&c))
+	writeJSON(w, http.StatusCreated, toCategoryDTO(categoryCreated))
 }
 
 func (cr *CategoryRest) getCategories(w http.ResponseWriter, r *http.Request) {
 	categories := cr.categorySvc.GetCategories()
 
 	writeJSON(w, http.StatusOK, toCategoriesDTO(categories))
+}
+
+func (cr *CategoryRest) deleteCategory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	categoryID, err := category.ParseCategoryID(vars["id"])
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	if err := cr.categorySvc.Delete(categoryID); err != nil {
+		notFound(w)
+	}
 }

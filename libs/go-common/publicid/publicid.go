@@ -11,7 +11,6 @@ import (
 type PublicID string
 
 func (id PublicID) ToPublic() string {
-	fmt.Println(strings.Split(string(id), ".")[1])
 	return strings.Split(string(id), ".")[1]
 }
 

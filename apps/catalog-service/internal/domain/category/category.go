@@ -22,3 +22,11 @@ func ParseCategoryID(s string) (CategoryID, error) {
 func NewCategoryID() CategoryID {
 	return publicid.New("category")
 }
+
+func NewCategory(description string) *Category {
+	return &Category{
+		Audit:       *audit.CreatedNow(),
+		CategoryID:  NewCategoryID(),
+		Description: description,
+	}
+}

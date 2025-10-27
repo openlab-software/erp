@@ -37,7 +37,7 @@ func NewRabbitMQPublisher() (*RabbitMQPublisher, error) {
 		return nil, err
 	}
 
-	exchange := "cms.events"
+	exchange := "erp.events"
 	if err := channel.ExchangeDeclare(
 		exchange, // name
 		"topic",  // type
