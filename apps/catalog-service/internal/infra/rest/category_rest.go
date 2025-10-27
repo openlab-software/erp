@@ -48,6 +48,7 @@ func NewCategoryRest(r *mux.Router, categoryService category.CategoryService) {
 	categoryRouter.HandleFunc("", categoryRest.createCategory).Methods("POST")
 	categoryRouter.HandleFunc("", categoryRest.getCategories).Methods("GET")
 	categoryRouter.HandleFunc("/{id}", categoryRest.deleteCategory).Methods("DELETE")
+	categoryRouter.HandleFunc("/{id}", categoryRest.getCategory).Methods("GET")
 }
 
 func (cr *CategoryRest) createCategory(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +67,11 @@ func (cr *CategoryRest) createCategory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cr *CategoryRest) getCategories(w http.ResponseWriter, r *http.Request) {
-	categories := cr.categorySvc.GetCategories()
+	query := r.URL.Query()
+
+	categories := cr.categorySvc.GetCategories(&category.GetCategoriesFilter{
+		Q: query.Get("q"),
+	})
 
 	writeJSON(w, http.StatusOK, toCategoriesDTO(categories))
 }
@@ -83,4 +88,17 @@ func (cr *CategoryRest) deleteCategory(w http.ResponseWriter, r *http.Request) {
 	if err := cr.categorySvc.Delete(categoryID); err != nil {
 		notFound(w)
 	}
+}
+
+func (cr *CategoryRest) getCategory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	categoryID, err := category.ParseCategoryID(vars["id"])
+	if err != nil {
+		badRequest(w, err)
+		return
+	}
+
+	founded := cr.categorySvc.GetById(categoryID)
+	writeJSON(w, http.StatusOK, toCategoryDTO(founded))
 }

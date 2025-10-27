@@ -40,8 +40,12 @@ func (svc *CategoryServiceImpl) Create(payload *category.CreateCategoryPayload) 
 	return newCategory, nil
 }
 
-func (svc *CategoryServiceImpl) GetCategories() []category.Category {
-	return svc.repository.Find()
+func (svc *CategoryServiceImpl) GetById(id category.CategoryID) *category.Category {
+	return svc.repository.FindById(id)
+}
+
+func (svc *CategoryServiceImpl) GetCategories(filter *category.GetCategoriesFilter) []category.Category {
+	return svc.repository.Find(filter.Q)
 }
 
 func (svc *CategoryServiceImpl) Delete(id category.CategoryID) error {

@@ -7,8 +7,8 @@ type Audit struct {
 	ModifiedAt *time.Time `bson:"modified_at" json:"modified_at"`
 }
 
-func CreatedNow() *Audit {
-	return &Audit{
+func CreatedNow() Audit {
+	return Audit{
 		CreatedAt: time.Now(),
 	}
 }

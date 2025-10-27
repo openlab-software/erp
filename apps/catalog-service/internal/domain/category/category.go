@@ -25,7 +25,7 @@ func NewCategoryID() CategoryID {
 
 func NewCategory(description string) *Category {
 	return &Category{
-		Audit:       *audit.CreatedNow(),
+		Audit:       audit.CreatedNow(),
 		CategoryID:  NewCategoryID(),
 		Description: description,
 	}

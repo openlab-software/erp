@@ -33,6 +33,26 @@ func NewPostgresCategoryRepository(db *gorm.DB) category.CategoryRepository {
 	}
 }
 
+func toEntity(c *category.Category) *categoryEntity {
+	return &categoryEntity{
+		PublicID:    c.CategoryID.ToPublic(),
+		Description: c.Description,
+		CreatedAt:   c.CreatedAt,
+	}
+}
+
+func toDomain(e *categoryEntity) *category.Category {
+	categoryID, _ := category.ParseCategoryID(e.PublicID)
+
+	return &category.Category{
+		CategoryID:  categoryID,
+		Description: e.Description,
+		Audit: audit.Audit{
+			CreatedAt: e.CreatedAt,
+		},
+	}
+}
+
 func (r *PostgresCategoryRepository) Insert(c *category.Category) error {
 	entity := categoryEntity{
 		PublicID:    c.CategoryID.ToPublic(),
@@ -45,24 +65,27 @@ func (r *PostgresCategoryRepository) Insert(c *category.Category) error {
 	return result.Error
 }
 
-func (r *PostgresCategoryRepository) Find() []category.Category {
+func (r *PostgresCategoryRepository) Find(description string) []category.Category {
 	var entities []categoryEntity
-	r.DB.Find(&entities)
+	r.DB.Where("LOWER(description) LIKE CONCAT('%',LOWER(?),'%')", description).Find(&entities)
 
 	categories := make([]category.Category, len(entities))
-	for i, c := range entities {
-		categoryID, _ := category.ParseCategoryID(c.PublicID)
-
-		categories[i] = category.Category{
-			CategoryID:  categoryID,
-			Description: c.Description,
-			Audit: audit.Audit{
-				CreatedAt: c.CreatedAt,
-			},
-		}
+	for i, e := range entities {
+		categories[i] = *toDomain(&e)
 	}
 
 	return categories
+}
+
+func (r *PostgresCategoryRepository) FindById(id category.CategoryID) *category.Category {
+	var entity *categoryEntity
+	result := r.DB.Where("public_id = ?", id.ToPublic()).First(&entity)
+
+	if entity == nil || errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil
+	}
+
+	return toDomain(entity)
 }
 
 func (r *PostgresCategoryRepository) FindByDescription(description string) *category.Category {
@@ -73,11 +96,7 @@ func (r *PostgresCategoryRepository) FindByDescription(description string) *cate
 		return nil
 	}
 
-	categoryID, _ := category.ParseCategoryID(entity.PublicID)
-	return &category.Category{
-		CategoryID:  categoryID,
-		Description: entity.Description,
-	}
+	return toDomain(entity)
 }
 
 func (r *PostgresCategoryRepository) DeleteById(id category.CategoryID) error {
