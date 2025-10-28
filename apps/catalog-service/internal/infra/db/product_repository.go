@@ -13,7 +13,8 @@ type productEntity struct {
 	ShortDescription string
 	UnitOfMeasure    string
 	Status           string
-	Category         categoryEntity `gorm:"foreignKey:category"`
+	CategoryID       uint
+	Category         categoryEntity
 }
 
 func (productEntity) TableName() string {
@@ -25,9 +26,9 @@ type PostgresProductRepository struct {
 	DB *gorm.DB
 }
 
-func NewPostgresProductRepository(db *gorm.DB) PostgresProductRepository {
+func NewPostgresProductRepository(db *gorm.DB) product.ProductRepository {
 	db.AutoMigrate(&productEntity{})
-	return PostgresProductRepository{
+	return &PostgresProductRepository{
 		DB: db,
 	}
 }
@@ -44,4 +45,16 @@ func (r *PostgresProductRepository) Insert(p *product.Product) error {
 	result := r.DB.Create(&entity)
 
 	return result.Error
+}
+
+func (r *PostgresProductRepository) Update(Product *product.Product) error {
+	return nil
+}
+
+func (r *PostgresProductRepository) FindByTitle(title string) ([]*product.Product, error) {
+	return nil, nil
+}
+
+func (r *PostgresProductRepository) FindById(id product.ProductID) (*product.Product, error) {
+	return nil, nil
 }

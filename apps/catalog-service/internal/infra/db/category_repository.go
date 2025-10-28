@@ -3,7 +3,6 @@ package db
 import (
 	"errors"
 	"strings"
-	"time"
 
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
@@ -11,10 +10,10 @@ import (
 )
 
 type categoryEntity struct {
+	gorm.Model
 	ID          uint
 	PublicID    string
 	Description string
-	CreatedAt   time.Time
 }
 
 func (categoryEntity) TableName() string {
@@ -37,7 +36,9 @@ func toEntity(c *category.Category) *categoryEntity {
 	return &categoryEntity{
 		PublicID:    c.CategoryID.ToPublic(),
 		Description: c.Description,
-		CreatedAt:   c.CreatedAt,
+		Model: gorm.Model{
+			CreatedAt: c.CreatedAt,
+		},
 	}
 }
 
@@ -57,7 +58,9 @@ func (r *PostgresCategoryRepository) Insert(c *category.Category) error {
 	entity := categoryEntity{
 		PublicID:    c.CategoryID.ToPublic(),
 		Description: c.Description,
-		CreatedAt:   c.CreatedAt,
+		Model: gorm.Model{
+			CreatedAt: c.CreatedAt,
+		},
 	}
 
 	result := r.DB.Create(&entity)

@@ -1,7 +1,7 @@
 package category
 
 const (
-	CategoryCreatedEvent = "catalog.category.created"
+	CategoryCreatedEvent = "category.created"
 )
 
 type CategoryCreatedPayload struct {

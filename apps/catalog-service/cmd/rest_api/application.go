@@ -51,6 +51,9 @@ func (app *application) run() error {
 	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
 	rest.NewCategoryRest(v1, categorySvc)
 
+	productRepo := db.NewPostgresProductRepository(gormDB)
+	services.NewProductService(productRepo, eventPublisher)
+
 	srv := &http.Server{
 		Addr:    app.config.addr,
 		Handler: router,
