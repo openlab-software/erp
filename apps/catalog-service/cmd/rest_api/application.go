@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,6 +12,7 @@ import (
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/amqpevent"
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/db"
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/rest"
+	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/postgres"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -31,12 +32,12 @@ func (app *application) run() error {
 
 	gormDB, err := postgres.Connect()
 	if err != nil {
-		fmt.Println("postgres", err)
+		log.Fatal("postgres", err)
 	}
 
-	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher()
+	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher(event.CatalogEvents)
 	if err != nil {
-		fmt.Println("rabbitmq", err)
+		log.Fatal("rabbitmq", err)
 	}
 	defer rabbitMQPublisher.Close()
 

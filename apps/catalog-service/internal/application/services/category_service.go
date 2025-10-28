@@ -10,19 +10,19 @@ import (
 
 type CategoryServiceImpl struct {
 	category.CategoryService
-	repository     category.CategoryRepository
-	eventPublisher event.Publisher
+	repo category.CategoryRepository
+	pub  event.Publisher
 }
 
-func NewCategoryService(repo category.CategoryRepository, eventPublisher event.Publisher) category.CategoryService {
+func NewCategoryService(repo category.CategoryRepository, pub event.Publisher) category.CategoryService {
 	return &CategoryServiceImpl{
-		repository:     repo,
-		eventPublisher: eventPublisher,
+		repo: repo,
+		pub:  pub,
 	}
 }
 
 func (svc *CategoryServiceImpl) Create(payload *category.CreateCategoryPayload) (*category.Category, error) {
-	sameDescription := svc.repository.FindByDescription(payload.Description)
+	sameDescription := svc.repo.FindByDescription(payload.Description)
 
 	if sameDescription != nil {
 		fmt.Sprintln(sameDescription)
@@ -30,24 +30,24 @@ func (svc *CategoryServiceImpl) Create(payload *category.CreateCategoryPayload) 
 	}
 
 	newCategory := category.NewCategory(payload.Description)
-	if err := svc.repository.Insert(newCategory); err != nil {
+	if err := svc.repo.Insert(newCategory); err != nil {
 		return nil, err
 	}
 
 	eventPayload := category.CategoryCreatedPayload{ID: string(newCategory.CategoryID), Description: newCategory.Description}
-	svc.eventPublisher.Publish(event.NewEvent(category.CategoryCreatedEvent, eventPayload))
+	svc.pub.Publish(event.NewEvent(category.CategoryCreatedEvent, eventPayload))
 
 	return newCategory, nil
 }
 
 func (svc *CategoryServiceImpl) GetById(id category.CategoryID) *category.Category {
-	return svc.repository.FindById(id)
+	return svc.repo.FindById(id)
 }
 
 func (svc *CategoryServiceImpl) GetCategories(filter *category.GetCategoriesFilter) []category.Category {
-	return svc.repository.Find(filter.Q)
+	return svc.repo.Find(filter.Q)
 }
 
 func (svc *CategoryServiceImpl) Delete(id category.CategoryID) error {
-	return svc.repository.DeleteById(id)
+	return svc.repo.DeleteById(id)
 }

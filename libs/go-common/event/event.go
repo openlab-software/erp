@@ -2,14 +2,19 @@ package event
 
 import "time"
 
-type AnyEvent struct {
-	Event     string      `json:"event"`
-	Timestamp time.Time   `json:"timestamp"`
-	Payload   interface{} `json:"payload"`
-}
+const (
+	CatalogEvents = "catalog.events"
+	StockEvents   = "stock.events"
+)
+
+type Handler func(body []byte) error
 
 type Publisher interface {
 	Publish(e Event) error
+}
+
+type Subscriber interface {
+	Subscribe(bindings []string, handler Handler) error
 }
 
 type Event struct {

@@ -7,13 +7,22 @@ import (
 
 type ProductServiceImpl struct {
 	product.ProductService
-	repository     product.ProductRepository
-	eventPublisher event.Publisher
+	repo product.ProductRepository
+	pub  event.Publisher
 }
 
-func NewProductService(repo product.ProductRepository, eventPublisher event.Publisher) product.ProductService {
+func NewProductService(repo product.ProductRepository, pub event.Publisher, sub event.Subscriber) product.ProductService {
+	sub.Subscribe([]string{
+		"user.created",
+		"user.login.failed",
+	}, handleCategoryCreated)
+
 	return &ProductServiceImpl{
-		repository:     repo,
-		eventPublisher: eventPublisher,
+		repo: repo,
+		pub:  pub,
 	}
+}
+
+func handleCategoryCreated(body []byte) error {
+	return nil
 }
