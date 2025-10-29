@@ -7,13 +7,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
-	// _ "github.com/patrickdevbr-portfolio/erp/apps/stock-service/docs"
+	_ "github.com/patrickdevbr-portfolio/erp/apps/catalog-service/cmd/rest_api/docs"
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/application/services"
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/amqpevent"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/db"
+	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/postgres"
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/rest"
+	"github.com/patrickdevbr-portfolio/erp/libs/go-common/db"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/postgres"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -30,7 +30,7 @@ func (app *application) run() error {
 	godotenv.Load(".env.dev")
 	router := mux.NewRouter()
 
-	gormDB, err := postgres.Connect()
+	gormDB, err := db.Connect()
 	if err != nil {
 		log.Fatal("postgres", err)
 	}
@@ -47,11 +47,11 @@ func (app *application) run() error {
 
 	v1 := router.PathPrefix("/v1").Subrouter()
 
-	categoryRepo := db.NewPostgresCategoryRepository(gormDB)
+	categoryRepo := postgres.NewPostgresCategoryRepository(gormDB)
 	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
 	rest.NewCategoryRest(v1, categorySvc)
 
-	productRepo := db.NewPostgresProductRepository(gormDB)
+	productRepo := postgres.NewPostgresProductRepository(gormDB)
 	services.NewProductService(productRepo, eventPublisher)
 
 	srv := &http.Server{

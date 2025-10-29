@@ -1,4 +1,4 @@
-package db
+package postgres
 
 import (
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/product"

@@ -1,0 +1,149 @@
+basePath: /v1
+definitions:
+  internal_infra_rest.categoryDTO:
+    properties:
+      category_id:
+        description: O ID único da categoria.
+        example: cat_2a1b3c4d5e
+        type: string
+      created_at:
+        type: string
+      description:
+        description: A descrição da categoria.
+        example: Eletrônicos
+        type: string
+      modified_at:
+        type: string
+    type: object
+  internal_infra_rest.createCategoryDTO:
+    properties:
+      description:
+        description: |-
+          A descrição da categoria.
+          required: true
+        example: Eletrônicos
+        type: string
+    required:
+    - description
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: contato@patrick.dev.br
+    name: Patrick Ribeiro
+    url: https://patrick.dev.br
+  description: |-
+    Serviço responsável por gerenciar o catálogo de produtos dentro do ERP.
+    Faz parte da arquitetura de microserviços utilizada no portfólio de Patrick Ribeiro.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://github.com/patrickdevbr-portfolio/erp
+  title: Catalog Service API
+  version: "1.0"
+paths:
+  /categories:
+    get:
+      description: Retorna uma lista de categorias. Permite filtrar por uma string
+        de busca 'q'.
+      parameters:
+      - description: Termo de busca para filtrar categorias pela descrição
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de categorias
+          schema:
+            items:
+              $ref: '#/definitions/internal_infra_rest.categoryDTO'
+            type: array
+      summary: List categories
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova categoria com base na descrição fornecida.
+      parameters:
+      - description: Payload para criação da categoria
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_infra_rest.createCategoryDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Categoria criada com sucesso
+          schema:
+            $ref: '#/definitions/internal_infra_rest.categoryDTO'
+        "400":
+          description: Requisição inválida (JSON mal formatado)
+          schema:
+            type: string
+        "422":
+          description: 'Erro de validação (ex: descrição em falta)'
+          schema:
+            type: string
+      summary: Cria uma nova categoria
+      tags:
+      - Categories
+  /categories/{id}:
+    delete:
+      description: Remove uma categoria específica do sistema pelo ID.
+      parameters:
+      - description: ID da Categoria
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Categoria deletada com sucesso (sem conteúdo)
+        "400":
+          description: ID da categoria inválido
+          schema:
+            type: string
+        "404":
+          description: Categoria não encontrada
+          schema:
+            type: string
+      summary: Deleta uma categoria
+      tags:
+      - Categories
+    get:
+      description: Retorna os detalhes de uma categoria específica.
+      parameters:
+      - description: ID da Categoria
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detalhes da categoria
+          schema:
+            $ref: '#/definitions/internal_infra_rest.categoryDTO'
+        "400":
+          description: ID da categoria inválido
+          schema:
+            type: string
+        "404":
+          description: Categoria não encontrada
+          schema:
+            type: string
+      summary: Busca uma categoria
+      tags:
+      - Categories
+schemes:
+- http
+- https
+swagger: "2.0"

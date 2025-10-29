@@ -7,7 +7,7 @@ args_bin = []
 bin = "./bin/main.exe"
 cmd = "go build -o ./bin/main.exe ./cmd/rest_api"
 delay = 1000
-exclude_dir = ["assets", "bin", "vendor", "testdata"]
+exclude_dir = ["assets", "bin", "vendor", "testdata","docs"]
 exclude_file = []
 exclude_regex = ["_test.go"]
 exclude_unchanged = false
@@ -21,7 +21,9 @@ log = "build-errors.log"
 poll = false
 poll_interval = 0
 post_cmd = []
-pre_cmd = []
+pre_cmd = [
+    "swag init -g ./cmd/rest_api/main.go --output ./cmd/rest_api/docs --parseDependency"
+]
 rerun = false
 rerun_delay = 500
 send_interrupt = false

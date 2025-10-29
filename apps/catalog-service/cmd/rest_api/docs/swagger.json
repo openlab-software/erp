@@ -1,0 +1,214 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Serviço responsável por gerenciar o catálogo de produtos dentro do ERP.\nFaz parte da arquitetura de microserviços utilizada no portfólio de Patrick Ribeiro.",
+        "title": "Catalog Service API",
+        "termsOfService": "https://github.com/patrickdevbr-portfolio/erp",
+        "contact": {
+            "name": "Patrick Ribeiro",
+            "url": "https://patrick.dev.br",
+            "email": "contato@patrick.dev.br"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8081",
+    "basePath": "/v1",
+    "paths": {
+        "/categories": {
+            "get": {
+                "description": "Retorna uma lista de categorias. Permite filtrar por uma string de busca 'q'.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "List categories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Termo de busca para filtrar categorias pela descrição",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de categorias",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_infra_rest.categoryDTO"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Cria uma nova categoria com base na descrição fornecida.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Cria uma nova categoria",
+                "parameters": [
+                    {
+                        "description": "Payload para criação da categoria",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.createCategoryDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Categoria criada com sucesso",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.categoryDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição inválida (JSON mal formatado)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Erro de validação (ex: descrição em falta)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/categories/{id}": {
+            "get": {
+                "description": "Retorna os detalhes de uma categoria específica.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Busca uma categoria",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID da Categoria",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalhes da categoria",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.categoryDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "ID da categoria inválido",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Categoria não encontrada",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove uma categoria específica do sistema pelo ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Deleta uma categoria",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID da Categoria",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Categoria deletada com sucesso (sem conteúdo)"
+                    },
+                    "400": {
+                        "description": "ID da categoria inválido",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Categoria não encontrada",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "internal_infra_rest.categoryDTO": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "description": "O ID único da categoria.",
+                    "type": "string",
+                    "example": "cat_2a1b3c4d5e"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "description": "A descrição da categoria.",
+                    "type": "string",
+                    "example": "Eletrônicos"
+                },
+                "modified_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_infra_rest.createCategoryDTO": {
+            "type": "object",
+            "required": [
+                "description"
+            ],
+            "properties": {
+                "description": {
+                    "description": "A descrição da categoria.\nrequired: true",
+                    "type": "string",
+                    "example": "Eletrônicos"
+                }
+            }
+        }
+    }
+}
