@@ -1,8 +1,9 @@
 package product
 
 type ProductRepository interface {
-	Insert(Product *Product) error
-	Update(Product *Product) error
-	FindByTitle(title string) ([]*Product, error)
-	FindById(id ProductID) (*Product, error)
+	Insert(p *Product) error
+	Update(p *Product) error
+	Find(description string) []*Product
+	FindById(id ProductID) *Product
+	DeleteById(id ProductID) error
 }

@@ -43,16 +43,16 @@ func (app *application) run() error {
 
 	eventPublisher := amqpevent.NewEventPublisher(rabbitMQPublisher)
 
-	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
-
-	v1 := router.PathPrefix("/v1").Subrouter()
-
 	categoryRepo := postgres.NewPostgresCategoryRepository(gormDB)
-	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
-	rest.NewCategoryRest(v1, categorySvc)
-
 	productRepo := postgres.NewPostgresProductRepository(gormDB)
-	services.NewProductService(productRepo, eventPublisher)
+
+	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
+	productSvc := services.NewProductService(productRepo, eventPublisher)
+
+	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
+	v1 := router.PathPrefix("/v1").Subrouter()
+	rest.NewCategoryRest(v1, categorySvc)
+	rest.NewProductRest(v1, productSvc)
 
 	srv := &http.Server{
 		Addr:    app.config.addr,

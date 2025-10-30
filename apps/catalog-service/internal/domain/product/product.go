@@ -12,7 +12,7 @@ const (
 	INACTIVE  = "INACTIVE"
 )
 
-type ProductID publicid.PublicID
+type ProductID = publicid.PublicID
 
 type ProductStatus string
 
@@ -35,4 +35,19 @@ func ParseProductID(s string) (ProductID, error) {
 	publicID, err := publicid.ParsePublic("product", s)
 
 	return ProductID(publicID), err
+}
+
+func NewProduct(description string, shorDescription string, unitOfMeasure string, categoryID category.CategoryID) *Product {
+	return &Product{
+		ProductID:        publicid.New("product"),
+		Description:      description,
+		ShortDescription: shorDescription,
+		UnitOfMeasure:    unitOfMeasure,
+		Status:           InactiveStatus,
+		Audit:            audit.CreatedNow(),
+		Category: category.Category{
+			CategoryID: categoryID,
+		},
+	}
+
 }

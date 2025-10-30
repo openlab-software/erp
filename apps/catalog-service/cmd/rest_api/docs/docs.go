@@ -175,6 +175,131 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/products": {
+            "get": {
+                "description": "Retorna uma lista de produtos, opcionalmente filtrada por uma query de pesquisa 'q'.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Lista todos os produtos",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Query de pesquisa (ex: descrição, id curto)",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de produtos",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_infra_rest.productDTO"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Cria um novo produto no catálogo com base no payload fornecido.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Cria um novo produto",
+                "parameters": [
+                    {
+                        "description": "Payload para criação do produto",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.createProductDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Produto criado com sucesso",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.productDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}": {
+            "get": {
+                "description": "Retorna um único produto dado seu ID público.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Obtém um produto pelo ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID público do produto (formato prod_...)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Produto encontrado",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.productDTO"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deleta um produto permanentemente usando seu ID público.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Deleta um produto",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID público do produto (formato prod_...)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -211,6 +336,47 @@ const docTemplate = `{
                     "example": "Eletrônicos"
                 }
             }
+        },
+        "internal_infra_rest.createProductDTO": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "description": "ID público da Categoria à qual o produto pertence.",
+                    "type": "string",
+                    "example": "cat_abc123def456"
+                },
+                "description": {
+                    "description": "Descrição completa do produto.",
+                    "type": "string",
+                    "example": "Smartphone X Pro 256GB"
+                },
+                "short_description": {
+                    "description": "Descrição curta do produto.",
+                    "type": "string",
+                    "example": "Smartphone X Pro"
+                },
+                "unit_of_measure": {
+                    "description": "Unidade de medida (ex: UN, KG, MT).",
+                    "type": "string",
+                    "example": "UN"
+                }
+            }
+        },
+        "internal_infra_rest.productDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "modified_at": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "description": "ID público do produto.",
+                    "type": "string",
+                    "example": "prod_xyz789uvw012"
+                }
+            }
         }
     }
 }`
@@ -218,7 +384,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8081",
+	Host:             "localhost:8080",
 	BasePath:         "/v1",
 	Schemes:          []string{"http", "https"},
 	Title:            "Catalog Service API",

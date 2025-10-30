@@ -19,14 +19,10 @@ func ParseCategoryID(s string) (CategoryID, error) {
 	return CategoryID(publicID), err
 }
 
-func NewCategoryID() CategoryID {
-	return publicid.New("category")
-}
-
 func NewCategory(description string) *Category {
 	return &Category{
 		Audit:       audit.CreatedNow(),
-		CategoryID:  NewCategoryID(),
+		CategoryID:  publicid.New("category"),
 		Description: description,
 	}
 }

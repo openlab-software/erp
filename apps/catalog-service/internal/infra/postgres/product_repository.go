@@ -1,25 +1,11 @@
 package postgres
 
 import (
+	"errors"
+
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/product"
 	"gorm.io/gorm"
 )
-
-type productEntity struct {
-	gorm.Model
-	ID               uint
-	PublicID         string
-	Description      string
-	ShortDescription string
-	UnitOfMeasure    string
-	Status           string
-	CategoryID       uint
-	Category         categoryEntity
-}
-
-func (productEntity) TableName() string {
-	return "catalog.products"
-}
 
 type PostgresProductRepository struct {
 	product.ProductRepository
@@ -34,27 +20,61 @@ func NewPostgresProductRepository(db *gorm.DB) product.ProductRepository {
 }
 
 func (r *PostgresProductRepository) Insert(p *product.Product) error {
-	entity := productEntity{
-		PublicID:         string(p.ProductID),
-		Description:      p.Description,
-		ShortDescription: p.ShortDescription,
-		Status:           string(p.Status),
-		UnitOfMeasure:    p.UnitOfMeasure,
+	entity := toProductEntity(p)
+
+	var category *categoryEntity
+	if result := r.DB.Where("public_id = ?", p.Category.CategoryID.ToPublic()).First(&category); result.Error != nil {
+		return result.Error
 	}
+
+	entity.Category = category
+	entity.CategoryID = category.ID
 
 	result := r.DB.Create(&entity)
 
 	return result.Error
 }
 
-func (r *PostgresProductRepository) Update(Product *product.Product) error {
-	return nil
+func (r *PostgresProductRepository) Update(p *product.Product) error {
+	var current *productEntity
+	if result := r.DB.Where("public_id = ?", p.ProductID.ToPublic()).First(&current); result.Error != nil {
+		return result.Error
+	}
+	var category *categoryEntity
+	if result := r.DB.Where("public_id = ?", p.Category.CategoryID.ToPublic()).First(&category); result.Error != nil {
+		return result.Error
+	}
+
+	current.Description = p.Description
+	current.ShortDescription = p.ShortDescription
+	current.Status = string(p.Status)
+	current.UnitOfMeasure = p.UnitOfMeasure
+	current.Category = category
+
+	result := r.DB.Save(current)
+
+	return result.Error
 }
 
-func (r *PostgresProductRepository) FindByTitle(title string) ([]*product.Product, error) {
-	return nil, nil
+func (r *PostgresProductRepository) Find(description string) []*product.Product {
+	var entities []productEntity
+	r.DB.Where("LOWER(description) LIKE CONCAT('%',LOWER(?),'%') OR LOWER(short_description) LIKE CONCAT('%',LOWER(?),'%')", description, description).Find(&entities)
+
+	products := make([]*product.Product, len(entities))
+	for i, e := range entities {
+		products[i] = toProductDomain(&e)
+	}
+
+	return products
 }
 
-func (r *PostgresProductRepository) FindById(id product.ProductID) (*product.Product, error) {
-	return nil, nil
+func (r *PostgresProductRepository) FindById(id product.ProductID) *product.Product {
+	var entity *productEntity
+	result := r.DB.Where("public_id = ?", id.ToPublic()).First(&entity)
+
+	if entity == nil || errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil
+	}
+
+	return toProductDomain(entity)
 }

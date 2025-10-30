@@ -26,7 +26,37 @@ definitions:
     required:
     - description
     type: object
-host: localhost:8081
+  internal_infra_rest.createProductDTO:
+    properties:
+      category_id:
+        description: ID público da Categoria à qual o produto pertence.
+        example: cat_abc123def456
+        type: string
+      description:
+        description: Descrição completa do produto.
+        example: Smartphone X Pro 256GB
+        type: string
+      short_description:
+        description: Descrição curta do produto.
+        example: Smartphone X Pro
+        type: string
+      unit_of_measure:
+        description: 'Unidade de medida (ex: UN, KG, MT).'
+        example: UN
+        type: string
+    type: object
+  internal_infra_rest.productDTO:
+    properties:
+      created_at:
+        type: string
+      modified_at:
+        type: string
+      product_id:
+        description: ID público do produto.
+        example: prod_xyz789uvw012
+        type: string
+    type: object
+host: localhost:8080
 info:
   contact:
     email: contato@patrick.dev.br
@@ -143,6 +173,89 @@ paths:
       summary: Busca uma categoria
       tags:
       - Categories
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Retorna uma lista de produtos, opcionalmente filtrada por uma query
+        de pesquisa 'q'.
+      parameters:
+      - description: 'Query de pesquisa (ex: descrição, id curto)'
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de produtos
+          schema:
+            items:
+              $ref: '#/definitions/internal_infra_rest.productDTO'
+            type: array
+      summary: Lista todos os produtos
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo produto no catálogo com base no payload fornecido.
+      parameters:
+      - description: Payload para criação do produto
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/internal_infra_rest.createProductDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Produto criado com sucesso
+          schema:
+            $ref: '#/definitions/internal_infra_rest.productDTO'
+      summary: Cria um novo produto
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deleta um produto permanentemente usando seu ID público.
+      parameters:
+      - description: ID público do produto (formato prod_...)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Deleta um produto
+      tags:
+      - products
+    get:
+      consumes:
+      - application/json
+      description: Retorna um único produto dado seu ID público.
+      parameters:
+      - description: ID público do produto (formato prod_...)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Produto encontrado
+          schema:
+            $ref: '#/definitions/internal_infra_rest.productDTO'
+      summary: Obtém um produto pelo ID
+      tags:
+      - products
 schemes:
 - http
 - https
