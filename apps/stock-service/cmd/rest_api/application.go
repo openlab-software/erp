@@ -1,15 +1,13 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
-	// _ "github.com/patrickdevbr-portfolio/erp/apps/stock-service/docs"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/mongodatabase"
+	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -33,14 +31,7 @@ func (app *application) run() error {
 	// }
 	// auth.NewMiddleware(oidcProvider)(mux)
 
-	ctx := context.Background()
-	mongoClient, err := mongodatabase.Connect(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer mongoClient.Disconnect(ctx)
-
-	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher()
+	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher(event.StockEvents)
 	if err != nil {
 		fmt.Println(err)
 	}

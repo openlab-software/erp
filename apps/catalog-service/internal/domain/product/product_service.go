@@ -1,12 +1,16 @@
 package product
 
-import "github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
+import (
+	"context"
+
+	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
+)
 
 type ProductService interface {
-	Create(p *CreateProductPayload) (*Product, error)
-	GetProducts(filter *GetProductsFilter) []*Product
-	Delete(id ProductID) error
-	GetById(id ProductID) *Product
+	Create(ctx context.Context, p *CreateProductPayload) (*Product, error)
+	GetProducts(ctx context.Context, filter *GetProductsFilter) []*Product
+	Delete(ctx context.Context, id ProductID) error
+	GetById(ctx context.Context, id ProductID) *Product
 }
 
 type GetProductsFilter struct {

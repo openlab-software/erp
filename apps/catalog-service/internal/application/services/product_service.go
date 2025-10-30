@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/product"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
 )
@@ -18,14 +20,14 @@ func NewProductService(repo product.ProductRepository, pub event.Publisher) prod
 	}
 }
 
-func (svc *ProductServiceImpl) Create(payload *product.CreateProductPayload) (*product.Product, error) {
+func (svc *ProductServiceImpl) Create(ctx context.Context, payload *product.CreateProductPayload) (*product.Product, error) {
 	newProduct := product.NewProduct(payload.Description, payload.ShortDescription, payload.UnitOfMeasure, payload.CategoryID)
-	if err := svc.repo.Insert(newProduct); err != nil {
+	if err := svc.repo.Insert(ctx, newProduct); err != nil {
 		return nil, err
 	}
 
 	eventPayload := product.ProductCreatedPayload{
-		// ID:          string(newProduct.ProductID),
+		ID:          string(newProduct.ProductID),
 		Description: newProduct.Description,
 	}
 	svc.pub.Publish(event.NewEvent(product.ProductCreatedEvent, eventPayload))
@@ -33,14 +35,14 @@ func (svc *ProductServiceImpl) Create(payload *product.CreateProductPayload) (*p
 	return newProduct, nil
 }
 
-func (svc *ProductServiceImpl) GetById(id product.ProductID) *product.Product {
-	return svc.repo.FindById(id)
+func (svc *ProductServiceImpl) GetById(ctx context.Context, id product.ProductID) *product.Product {
+	return svc.repo.FindById(ctx, id)
 }
 
-func (svc *ProductServiceImpl) GetProducts(filter *product.GetProductsFilter) []*product.Product {
-	return svc.repo.Find(filter.Q)
+func (svc *ProductServiceImpl) GetProducts(ctx context.Context, filter *product.GetProductsFilter) []*product.Product {
+	return svc.repo.Find(ctx, filter.Q)
 }
 
-func (svc *ProductServiceImpl) Delete(id product.ProductID) error {
-	return svc.repo.DeleteById(id)
+func (svc *ProductServiceImpl) Delete(ctx context.Context, id product.ProductID) error {
+	return svc.repo.DeleteById(ctx, id)
 }

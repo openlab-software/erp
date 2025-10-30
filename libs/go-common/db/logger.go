@@ -10,6 +10,16 @@ import (
 	"gorm.io/gorm/utils"
 )
 
+type RecorderLogger struct {
+	gormlogger.Interface
+	Statements []string
+}
+
+func (r *RecorderLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+	sql, _ := fc()
+	r.Statements = append(r.Statements, sql)
+}
+
 type gormLogger struct {
 	SlowThreshold time.Duration
 	LogLevel      gormlogger.LogLevel

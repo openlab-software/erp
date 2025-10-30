@@ -86,7 +86,7 @@ func (cr *ProductRest) createProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	productCreated, err := cr.productSvc.Create(&product.CreateProductPayload{
+	productCreated, err := cr.productSvc.Create(r.Context(), &product.CreateProductPayload{
 		Description:      dto.Description,
 		ShortDescription: dto.ShortDescription,
 		UnitOfMeasure:    dto.UnitOfMeasure,
@@ -94,12 +94,10 @@ func (cr *ProductRest) createProduct(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		// Função utilitária para 422 (não implementada aqui)
 		unprocessableEntity(w, err)
 		return
 	}
 
-	// Função utilitária para escrever JSON (não implementada aqui)
 	writeJSON(w, http.StatusCreated, toProductDTO(productCreated))
 }
 
@@ -115,7 +113,7 @@ func (cr *ProductRest) createProduct(w http.ResponseWriter, r *http.Request) {
 func (cr *ProductRest) getProducts(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 
-	products := cr.productSvc.GetProducts(&product.GetProductsFilter{
+	products := cr.productSvc.GetProducts(r.Context(), &product.GetProductsFilter{
 		Q: query.Get("q"),
 	})
 
@@ -140,7 +138,7 @@ func (cr *ProductRest) deleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cr.productSvc.Delete(productID); err != nil {
+	if err := cr.productSvc.Delete(r.Context(), productID); err != nil {
 		notFound(w)
 		return
 	}
@@ -166,7 +164,7 @@ func (cr *ProductRest) getProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	founded := cr.productSvc.GetById(productID)
+	founded := cr.productSvc.GetById(r.Context(), productID)
 
 	if founded == nil {
 		notFound(w)

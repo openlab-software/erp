@@ -1,9 +1,11 @@
 package category
 
+import "context"
+
 type CategoryRepository interface {
-	Insert(c *Category) error
-	Find(description string) []Category
-	FindById(id CategoryID) *Category
-	FindByDescription(description string) *Category
-	DeleteById(id CategoryID) error
+	Insert(ctx context.Context, c *Category) error
+	Find(ctx context.Context, description string) []Category
+	FindById(ctx context.Context, id CategoryID) *Category
+	FindByDescription(ctx context.Context, description string) *Category
+	DeleteById(ctx context.Context, id CategoryID) error
 }

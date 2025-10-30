@@ -1,10 +1,12 @@
 package category
 
+import "context"
+
 type CategoryService interface {
-	Create(c *CreateCategoryPayload) (*Category, error)
-	GetById(id CategoryID) *Category
-	GetCategories(filter *GetCategoriesFilter) []Category
-	Delete(id CategoryID) error
+	Create(ctx context.Context, c *CreateCategoryPayload) (*Category, error)
+	GetById(ctx context.Context, id CategoryID) *Category
+	GetCategories(ctx context.Context, filter *GetCategoriesFilter) []Category
+	Delete(ctx context.Context, id CategoryID) error
 }
 
 type CreateCategoryPayload struct {

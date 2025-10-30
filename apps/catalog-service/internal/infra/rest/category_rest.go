@@ -73,7 +73,7 @@ func (cr *CategoryRest) createCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	categoryCreated, err := cr.categorySvc.Create(&category.CreateCategoryPayload{Description: dto.Description})
+	categoryCreated, err := cr.categorySvc.Create(r.Context(), &category.CreateCategoryPayload{Description: dto.Description})
 	if err != nil {
 		unprocessableEntity(w, err)
 		return
@@ -92,7 +92,7 @@ func (cr *CategoryRest) createCategory(w http.ResponseWriter, r *http.Request) {
 func (cr *CategoryRest) getCategories(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 
-	categories := cr.categorySvc.GetCategories(&category.GetCategoriesFilter{
+	categories := cr.categorySvc.GetCategories(r.Context(), &category.GetCategoriesFilter{
 		Q: query.Get("q"),
 	})
 
@@ -117,7 +117,7 @@ func (cr *CategoryRest) deleteCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cr.categorySvc.Delete(categoryID); err != nil {
+	if err := cr.categorySvc.Delete(r.Context(), categoryID); err != nil {
 		notFound(w)
 		return
 	}
@@ -143,7 +143,7 @@ func (cr *CategoryRest) getCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	founded := cr.categorySvc.GetById(categoryID)
+	founded := cr.categorySvc.GetById(r.Context(), categoryID)
 
 	// Adicionando verificação de "não encontrado"
 	if founded == nil {

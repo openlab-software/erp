@@ -1,25 +1,12 @@
 package db
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"time"
 
 	postgresDriver "gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
-
-type RecorderLogger struct {
-	logger.Interface
-	Statements []string
-}
-
-func (r *RecorderLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	sql, _ := fc()
-	r.Statements = append(r.Statements, sql)
-}
 
 func Connect() (*gorm.DB, error) {
 	host := os.Getenv("POSTGRES_HOST")

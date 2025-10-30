@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"errors"
 
 	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/product"
@@ -19,11 +20,11 @@ func NewPostgresProductRepository(db *gorm.DB) product.ProductRepository {
 	}
 }
 
-func (r *PostgresProductRepository) Insert(p *product.Product) error {
+func (r *PostgresProductRepository) Insert(ctx context.Context, p *product.Product) error {
 	entity := toProductEntity(p)
 
 	var category *categoryEntity
-	if result := r.DB.Where("public_id = ?", p.Category.CategoryID.ToPublic()).First(&category); result.Error != nil {
+	if result := r.DB.WithContext(ctx).Where("public_id = ?", p.Category.CategoryID.ToPublic()).First(&category); result.Error != nil {
 		return result.Error
 	}
 
@@ -35,13 +36,13 @@ func (r *PostgresProductRepository) Insert(p *product.Product) error {
 	return result.Error
 }
 
-func (r *PostgresProductRepository) Update(p *product.Product) error {
+func (r *PostgresProductRepository) Update(ctx context.Context, p *product.Product) error {
 	var current *productEntity
-	if result := r.DB.Where("public_id = ?", p.ProductID.ToPublic()).First(&current); result.Error != nil {
+	if result := r.DB.WithContext(ctx).Where("public_id = ?", p.ProductID.ToPublic()).First(&current); result.Error != nil {
 		return result.Error
 	}
 	var category *categoryEntity
-	if result := r.DB.Where("public_id = ?", p.Category.CategoryID.ToPublic()).First(&category); result.Error != nil {
+	if result := r.DB.WithContext(ctx).Where("public_id = ?", p.Category.CategoryID.ToPublic()).First(&category); result.Error != nil {
 		return result.Error
 	}
 
@@ -56,9 +57,9 @@ func (r *PostgresProductRepository) Update(p *product.Product) error {
 	return result.Error
 }
 
-func (r *PostgresProductRepository) Find(description string) []*product.Product {
+func (r *PostgresProductRepository) Find(ctx context.Context, description string) []*product.Product {
 	var entities []productEntity
-	r.DB.Where("LOWER(description) LIKE CONCAT('%',LOWER(?),'%') OR LOWER(short_description) LIKE CONCAT('%',LOWER(?),'%')", description, description).Find(&entities)
+	r.DB.WithContext(ctx).Where("LOWER(description) LIKE CONCAT('%',LOWER(?),'%') OR LOWER(short_description) LIKE CONCAT('%',LOWER(?),'%')", description, description).Find(&entities)
 
 	products := make([]*product.Product, len(entities))
 	for i, e := range entities {
@@ -68,9 +69,9 @@ func (r *PostgresProductRepository) Find(description string) []*product.Product 
 	return products
 }
 
-func (r *PostgresProductRepository) FindById(id product.ProductID) *product.Product {
+func (r *PostgresProductRepository) FindById(ctx context.Context, id product.ProductID) *product.Product {
 	var entity *productEntity
-	result := r.DB.Where("public_id = ?", id.ToPublic()).First(&entity)
+	result := r.DB.WithContext(ctx).Where("public_id = ?", id.ToPublic()).First(&entity)
 
 	if entity == nil || errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil

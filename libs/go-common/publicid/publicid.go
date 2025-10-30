@@ -17,6 +17,10 @@ func (id PublicID) ToPublic() string {
 	return strings.Split(string(id), ".")[1]
 }
 
+func (id PublicID) ToString() string {
+	return string(id)
+}
+
 func New(prefix string) PublicID {
 	return PublicID(fmt.Sprintf("%s.%s", prefix, uuid.New().String()))
 }
