@@ -27,7 +27,7 @@ func (svc *ProductServiceImpl) Create(ctx context.Context, payload *product.Crea
 	}
 
 	eventPayload := product.ProductCreatedPayload{
-		ID:          string(newProduct.ProductID),
+		ID:          newProduct.ProductID,
 		Description: newProduct.Description,
 	}
 	svc.pub.Publish(event.NewEvent(product.ProductCreatedEvent, eventPayload))

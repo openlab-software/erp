@@ -2,11 +2,17 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
+	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/application/services"
+	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/infra/amqpevent"
+	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/infra/postgres"
+	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/infra/rest"
+	"github.com/patrickdevbr-portfolio/erp/libs/go-common/db"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -31,20 +37,33 @@ func (app *application) run() error {
 	// }
 	// auth.NewMiddleware(oidcProvider)(mux)
 
+	gormDB, err := db.Connect()
+	if err != nil {
+		log.Fatal("postgres", err)
+	}
+
 	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher(event.StockEvents)
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer rabbitMQPublisher.Close()
 
-	// eventPublisher := amqpevent.NewEventPublisher(rabbitMQPublisher)
-	// pageRepo := mongodb.NewPageRepository(mongoClient)
-	// pageSvc := services.NewPageService(pageRepo, eventPublisher)
+	rabbitMQSubscriber, err := rabbitmq.NewRabbitMQSubscriber(event.CatalogEvents, "stock-subscriber")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer rabbitMQSubscriber.Close()
+
+	eventPublisher := amqpevent.NewEventPublisher(rabbitMQPublisher)
+	eventSubscriber := amqpevent.NewEventSubscriber(rabbitMQSubscriber)
+
+	stockRepo := postgres.NewPostgresStockRepository(gormDB)
+	stockSvc := services.NewStockService(stockRepo, eventPublisher, eventSubscriber)
 
 	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
 
-	// v1 := router.PathPrefix("/v1").Subrouter()
-	// rest.NewProductRest(v1, pageSvc)
+	v1 := router.PathPrefix("/v1").Subrouter()
+	rest.NewStockRest(v1, stockSvc)
 
 	srv := &http.Server{
 		Addr:    app.config.addr,

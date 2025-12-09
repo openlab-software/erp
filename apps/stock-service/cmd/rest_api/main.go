@@ -18,14 +18,14 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8080
+// @host localhost:8081
 // @BasePath /v1
 
 // @schemes http https
 
 func main() {
 	app := &application{
-		config: config{addr: ":8080"},
+		config: config{addr: ":8081"},
 	}
 
 	log.Fatal(app.run())

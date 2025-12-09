@@ -19,7 +19,7 @@ type RabbitMQSubscriber struct {
 
 var ErrRequeue = errors.New("requeue message")
 
-func NewRabbitMQSubscriber(exchange, queue string) (event.Subscriber, error) {
+func NewRabbitMQSubscriber(exchange, queue string) (*RabbitMQSubscriber, error) {
 	conn, err := connect()
 	if err != nil {
 		return nil, err
