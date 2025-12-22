@@ -23,11 +23,18 @@ func toStockEntity(s *stock.Stock) *stockEntity {
 	}
 }
 
-func toStockDomain(s *stock.Stock) *stockEntity {
-	return &stockEntity{
-		PublicID:    s.StockID.ToPublic(),
-		Description: s.Description,
+func toItemEntity(i *stock.StockItem) *stockItemEntity {
+	return &stockItemEntity{
+		ProductID:    i.ProductID,
+		MinValue:     i.MinValue,
+		CurrentValue: i.CurrentValue,
+		MaxValue:     i.MaxValue,
+		Stock:        toStockEntity(&i.Stock),
 	}
+}
+
+func toStockDomain(e *stockEntity) *stock.Stock {
+	return nil
 }
 
 type stockItemEntity struct {

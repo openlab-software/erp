@@ -20,14 +20,28 @@ func NewPostgresStockRepository(db *gorm.DB) stock.StockRepository {
 }
 
 func (r *PostgresStockRepository) InsertItem(ctx context.Context, item stock.StockItem) error {
-	return nil
+	entity := toItemEntity(&item)
+	result := r.DB.WithContext(ctx).Create(&entity)
+
+	return result.Error
+
 }
 
 func (r *PostgresStockRepository) InsertStock(ctx context.Context, s *stock.Stock) error {
 	entity := toStockEntity(s)
-	return nil
+	result := r.DB.WithContext(ctx).Create(&entity)
+
+	return result.Error
 }
 
 func (r *PostgresStockRepository) FindStocks(ctx context.Context) []*stock.Stock {
-	return nil
+	var entities []stockEntity
+	r.DB.WithContext(ctx).Find(&entities)
+
+	stocks := make([]*stock.Stock, len(entities))
+	for i, e := range entities {
+		stocks[i] = toStockDomain(&e)
+	}
+
+	return stocks
 }

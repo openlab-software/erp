@@ -36,6 +36,7 @@ func NewEmptyItem(productID string, stock Stock) *StockItem {
 
 func NewStock(description string) *Stock {
 	return &Stock{
+		StockID:     publicid.New("stock"),
 		Audit:       audit.CreatedNow(),
 		Description: description,
 	}
