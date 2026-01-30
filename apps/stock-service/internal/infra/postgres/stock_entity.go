@@ -34,7 +34,10 @@ func toItemEntity(i *stock.StockItem) *stockItemEntity {
 }
 
 func toStockDomain(e *stockEntity) *stock.Stock {
-	return nil
+	return &stock.Stock{
+		StockID:     stock.StockID(e.PublicID),
+		Description: e.Description,
+	}
 }
 
 type stockItemEntity struct {

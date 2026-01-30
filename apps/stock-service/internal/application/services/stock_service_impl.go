@@ -19,6 +19,11 @@ type productCreatedPayload struct {
 	Description string `json:"description"`
 }
 
+type productCreatedEvent struct {
+	event.Event
+	Payload productCreatedPayload `json:"payload"`
+}
+
 func NewStockService(repo stock.StockRepository, pub event.Publisher, sub event.Subscriber) stock.StockService {
 	svc := &StockServiceImpl{
 		repo: repo,
@@ -26,12 +31,12 @@ func NewStockService(repo stock.StockRepository, pub event.Publisher, sub event.
 	}
 
 	sub.Subscribe([]string{"product.created"}, func(body []byte) error {
-		var payload productCreatedPayload
-		if err := json.Unmarshal(body, &payload); err != nil {
+		var event productCreatedEvent
+		if err := json.Unmarshal(body, &event); err != nil {
 			return err
 		}
 
-		return svc.InitItem(context.Background(), payload.ID)
+		return svc.InitItem(context.Background(), event.Payload.ID)
 	})
 
 	return svc
@@ -42,6 +47,7 @@ func (svc *StockServiceImpl) InitItem(ctx context.Context, productID string) err
 
 	for _, s := range allStocks {
 		newStockItem := stock.NewEmptyItem(productID, *s)
+
 		svc.repo.InsertItem(ctx, *newStockItem)
 	}
 	return nil

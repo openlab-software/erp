@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"log"
 
 	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/stock"
 	"gorm.io/gorm"
@@ -20,11 +21,20 @@ func NewPostgresStockRepository(db *gorm.DB) stock.StockRepository {
 }
 
 func (r *PostgresStockRepository) InsertItem(ctx context.Context, item stock.StockItem) error {
-	entity := toItemEntity(&item)
-	result := r.DB.WithContext(ctx).Create(&entity)
+	var stockEntity stockEntity
+	if err := r.DB.WithContext(ctx).Where("public_id = ?", item.Stock.StockID.ToPublic()).First(&stockEntity).Error; err != nil {
+		return err
+	}
+
+	itemEntity := toItemEntity(&item)
+	itemEntity.StockID = stockEntity.ID
+	itemEntity.Stock = nil
+
+	log.Println("itemEntity")
+	log.Println(itemEntity)
+	result := r.DB.WithContext(ctx).Create(&itemEntity)
 
 	return result.Error
-
 }
 
 func (r *PostgresStockRepository) InsertStock(ctx context.Context, s *stock.Stock) error {
