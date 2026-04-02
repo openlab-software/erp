@@ -5,6 +5,7 @@
     "dev": "modern dev",
     "build": "modern build",
     "serve": "modern serve",
+    "deploy": "modern deploy",
     "lint": "biome check"
   },
   "engines": {
