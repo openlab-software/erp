@@ -6,7 +6,6 @@ import (
 )
 
 type EventSubscriber struct {
-	event.Subscriber
 	rabbitmq *rabbitmq.RabbitMQSubscriber
 }
 

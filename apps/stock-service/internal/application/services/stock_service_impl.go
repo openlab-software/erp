@@ -36,13 +36,13 @@ func NewStockService(repo stock.StockRepository, pub event.Publisher, sub event.
 			return err
 		}
 
-		return svc.InitItem(context.Background(), event.Payload.ID)
+		return svc.InitItems(context.Background(), event.Payload.ID)
 	})
 
 	return svc
 }
 
-func (svc *StockServiceImpl) InitItem(ctx context.Context, productID string) error {
+func (svc *StockServiceImpl) InitItems(ctx context.Context, productID string) error {
 	allStocks := svc.repo.FindStocks(ctx)
 
 	for _, s := range allStocks {
