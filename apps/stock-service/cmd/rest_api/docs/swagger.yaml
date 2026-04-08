@@ -1,0 +1,94 @@
+basePath: /v1
+definitions:
+  internal_infra_rest.createStockDTO:
+    properties:
+      description:
+        description: Descrição do estoque.
+        example: Estoque Central
+        type: string
+    required:
+    - description
+    type: object
+  internal_infra_rest.stockDTO:
+    properties:
+      created_at:
+        type: string
+      description:
+        description: Descrição do estoque.
+        example: Estoque Central
+        type: string
+      modified_at:
+        type: string
+      stock_id:
+        description: ID público do estoque.
+        example: stock_abc123def456
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: contato@patrick.dev.br
+    name: Patrick Ribeiro
+    url: https://patrick.dev.br
+  description: |-
+    Serviço responsável por gerenciar estoques dentro do ERP.
+    Faz parte da arquitetura de microserviços utilizada no portfólio de Patrick Ribeiro.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://github.com/openlab-software/erp
+  title: Stock Service API
+  version: "1.0"
+paths:
+  /stocks:
+    get:
+      description: Retorna uma lista de todos os estoques cadastrados.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de estoques
+          schema:
+            items:
+              $ref: '#/definitions/internal_infra_rest.stockDTO'
+            type: array
+      summary: Lista todos os estoques
+      tags:
+      - stocks
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo estoque com base no payload fornecido.
+      parameters:
+      - description: Payload para criação do estoque
+        in: body
+        name: stock
+        required: true
+        schema:
+          $ref: '#/definitions/internal_infra_rest.createStockDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Estoque criado com sucesso
+          schema:
+            $ref: '#/definitions/internal_infra_rest.stockDTO'
+        "400":
+          description: Requisição inválida
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Erro de validação
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria um novo estoque
+      tags:
+      - stocks
+schemes:
+- http
+- https
+swagger: "2.0"

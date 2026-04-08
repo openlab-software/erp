@@ -1,0 +1,135 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Serviço responsável por gerenciar estoques dentro do ERP.\nFaz parte da arquitetura de microserviços utilizada no portfólio de Patrick Ribeiro.",
+        "title": "Stock Service API",
+        "termsOfService": "https://github.com/openlab-software/erp",
+        "contact": {
+            "name": "Patrick Ribeiro",
+            "url": "https://patrick.dev.br",
+            "email": "contato@patrick.dev.br"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8081",
+    "basePath": "/v1",
+    "paths": {
+        "/stocks": {
+            "get": {
+                "description": "Retorna uma lista de todos os estoques cadastrados.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stocks"
+                ],
+                "summary": "Lista todos os estoques",
+                "responses": {
+                    "200": {
+                        "description": "Lista de estoques",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_infra_rest.stockDTO"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Cria um novo estoque com base no payload fornecido.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stocks"
+                ],
+                "summary": "Cria um novo estoque",
+                "parameters": [
+                    {
+                        "description": "Payload para criação do estoque",
+                        "name": "stock",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.createStockDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Estoque criado com sucesso",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.stockDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição inválida",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erro de validação",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "internal_infra_rest.createStockDTO": {
+            "type": "object",
+            "required": [
+                "description"
+            ],
+            "properties": {
+                "description": {
+                    "description": "Descrição do estoque.",
+                    "type": "string",
+                    "example": "Estoque Central"
+                }
+            }
+        },
+        "internal_infra_rest.stockDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Descrição do estoque.",
+                    "type": "string",
+                    "example": "Estoque Central"
+                },
+                "modified_at": {
+                    "type": "string"
+                },
+                "stock_id": {
+                    "description": "ID público do estoque.",
+                    "type": "string",
+                    "example": "stock_abc123def456"
+                }
+            }
+        }
+    }
+}

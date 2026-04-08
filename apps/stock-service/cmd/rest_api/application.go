@@ -8,6 +8,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
+	_ "github.com/patrickdevbr-portfolio/erp/apps/stock-service/cmd/rest_api/docs"
+
 	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/application/services"
 	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/infra/amqpevent"
 	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/infra/postgres"
@@ -42,7 +44,7 @@ func (app *application) run() error {
 		log.Fatal("postgres", err)
 	}
 
-	if err := db.EnsureSchema(gormDB, "catalog"); err != nil {
+	if err := db.EnsureSchema(gormDB, "stock"); err != nil {
 		log.Fatal("postgres schema", err)
 	}
 
@@ -64,7 +66,8 @@ func (app *application) run() error {
 	stockRepo := postgres.NewPostgresStockRepository(gormDB)
 	stockSvc := services.NewStockService(stockRepo, eventPublisher, eventSubscriber)
 
-	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
+	router.Handle("/docs", http.RedirectHandler("/docs/index.html", http.StatusMovedPermanently))
+	router.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
 
 	v1 := router.PathPrefix("/v1").Subrouter()
 	rest.NewStockRest(v1, stockSvc)

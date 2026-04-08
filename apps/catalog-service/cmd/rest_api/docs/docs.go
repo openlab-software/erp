@@ -328,12 +328,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "category_id": {
-                    "description": "ID público da categoria.",
                     "type": "string",
                     "example": "cat_2a1b3c4d5e"
                 },
                 "description": {
-                    "description": "Descrição da categoria.",
                     "type": "string",
                     "example": "Eletrônicos"
                 }
@@ -381,18 +379,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "category": {
-                    "description": "Categoria associada ao produto.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/internal_infra_rest.categoryInProductDTO"
-                        }
-                    ]
+                    "$ref": "#/definitions/internal_infra_rest.categoryInProductDTO"
                 },
                 "created_at": {
                     "type": "string"
                 },
                 "description": {
-                    "description": "Descrição completa do produto.",
                     "type": "string",
                     "example": "Smartphone X Pro 256GB"
                 },
@@ -400,22 +392,18 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "product_id": {
-                    "description": "ID público do produto.",
                     "type": "string",
                     "example": "prod_xyz789uvw012"
                 },
                 "short_description": {
-                    "description": "Descrição curta do produto.",
                     "type": "string",
                     "example": "Smartphone X Pro"
                 },
                 "status": {
-                    "description": "Status do produto (ACTIVE, INACTIVE).",
                     "type": "string",
                     "example": "INACTIVE"
                 },
                 "unit_of_measure": {
-                    "description": "Unidade de medida (ex: UN, KG, MT).",
                     "type": "string",
                     "example": "UN"
                 }

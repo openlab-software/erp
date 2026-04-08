@@ -60,7 +60,8 @@ func (app *application) run() error {
 
 	router := mux.NewRouter()
 
-	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
+	router.Handle("/docs", http.RedirectHandler("/docs/index.html", http.StatusMovedPermanently))
+	router.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
 	v1 := router.PathPrefix(fmt.Sprintf("%s/v1", app.config.http.path)).Subrouter()
 	rest.NewCategoryRest(v1, categorySvc)
 	rest.NewProductRest(v1, productSvc)
