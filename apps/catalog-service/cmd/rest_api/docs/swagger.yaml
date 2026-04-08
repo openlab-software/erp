@@ -1,4 +1,4 @@
-basePath: /v1
+basePath: /catalog-service/v1
 definitions:
   internal_infra_rest.categoryDTO:
     properties:
@@ -15,12 +15,21 @@ definitions:
       modified_at:
         type: string
     type: object
+  internal_infra_rest.categoryInProductDTO:
+    properties:
+      category_id:
+        description: ID público da categoria.
+        example: cat_2a1b3c4d5e
+        type: string
+      description:
+        description: Descrição da categoria.
+        example: Eletrônicos
+        type: string
+    type: object
   internal_infra_rest.createCategoryDTO:
     properties:
       description:
-        description: |-
-          A descrição da categoria.
-          required: true
+        description: A descrição da categoria.
         example: Eletrônicos
         type: string
     required:
@@ -47,13 +56,33 @@ definitions:
     type: object
   internal_infra_rest.productDTO:
     properties:
+      category:
+        allOf:
+        - $ref: '#/definitions/internal_infra_rest.categoryInProductDTO'
+        description: Categoria associada ao produto.
       created_at:
+        type: string
+      description:
+        description: Descrição completa do produto.
+        example: Smartphone X Pro 256GB
         type: string
       modified_at:
         type: string
       product_id:
         description: ID público do produto.
         example: prod_xyz789uvw012
+        type: string
+      short_description:
+        description: Descrição curta do produto.
+        example: Smartphone X Pro
+        type: string
+      status:
+        description: Status do produto (ACTIVE, INACTIVE).
+        example: INACTIVE
+        type: string
+      unit_of_measure:
+        description: 'Unidade de medida (ex: UN, KG, MT).'
+        example: UN
         type: string
     type: object
 host: localhost:8080
@@ -68,7 +97,7 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  termsOfService: https://github.com/patrickdevbr-portfolio/erp
+  termsOfService: https://github.com/openlab-software/erp
   title: Catalog Service API
   version: "1.0"
 paths:

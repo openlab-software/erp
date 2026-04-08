@@ -7,7 +7,7 @@
     "info": {
         "description": "Serviço responsável por gerenciar o catálogo de produtos dentro do ERP.\nFaz parte da arquitetura de microserviços utilizada no portfólio de Patrick Ribeiro.",
         "title": "Catalog Service API",
-        "termsOfService": "https://github.com/patrickdevbr-portfolio/erp",
+        "termsOfService": "https://github.com/openlab-software/erp",
         "contact": {
             "name": "Patrick Ribeiro",
             "url": "https://patrick.dev.br",
@@ -20,7 +20,7 @@
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/v1",
+    "basePath": "/catalog-service/v1",
     "paths": {
         "/categories": {
             "get": {
@@ -322,6 +322,21 @@
                 }
             }
         },
+        "internal_infra_rest.categoryInProductDTO": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "description": "ID público da categoria.",
+                    "type": "string",
+                    "example": "cat_2a1b3c4d5e"
+                },
+                "description": {
+                    "description": "Descrição da categoria.",
+                    "type": "string",
+                    "example": "Eletrônicos"
+                }
+            }
+        },
         "internal_infra_rest.createCategoryDTO": {
             "type": "object",
             "required": [
@@ -329,7 +344,7 @@
             ],
             "properties": {
                 "description": {
-                    "description": "A descrição da categoria.\nrequired: true",
+                    "description": "A descrição da categoria.",
                     "type": "string",
                     "example": "Eletrônicos"
                 }
@@ -363,8 +378,21 @@
         "internal_infra_rest.productDTO": {
             "type": "object",
             "properties": {
+                "category": {
+                    "description": "Categoria associada ao produto.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/internal_infra_rest.categoryInProductDTO"
+                        }
+                    ]
+                },
                 "created_at": {
                     "type": "string"
+                },
+                "description": {
+                    "description": "Descrição completa do produto.",
+                    "type": "string",
+                    "example": "Smartphone X Pro 256GB"
                 },
                 "modified_at": {
                     "type": "string"
@@ -373,6 +401,21 @@
                     "description": "ID público do produto.",
                     "type": "string",
                     "example": "prod_xyz789uvw012"
+                },
+                "short_description": {
+                    "description": "Descrição curta do produto.",
+                    "type": "string",
+                    "example": "Smartphone X Pro"
+                },
+                "status": {
+                    "description": "Status do produto (ACTIVE, INACTIVE).",
+                    "type": "string",
+                    "example": "INACTIVE"
+                },
+                "unit_of_measure": {
+                    "description": "Unidade de medida (ex: UN, KG, MT).",
+                    "type": "string",
+                    "example": "UN"
                 }
             }
         }

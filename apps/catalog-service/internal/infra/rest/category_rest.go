@@ -8,14 +8,15 @@ import (
 	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
 )
 
-// createCategoryDTO define o payload para criar uma nova category.
+// createCategoryDTO define o payload para criar uma nova categoria.
+// @name CreateCategoryDTO
 type createCategoryDTO struct {
 	// A descrição da categoria.
-	// required: true
 	Description string `json:"description" validate:"required" example:"Eletrônicos"`
 }
 
 // categoryDTO define a representação de uma categoria na API.
+// @name CategoryDTO
 type categoryDTO struct {
 	audit.Audit
 	// O ID único da categoria.

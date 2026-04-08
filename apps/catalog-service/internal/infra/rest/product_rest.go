@@ -11,6 +11,7 @@ import (
 )
 
 // createProductDTO representa o payload de entrada para criação de um produto.
+// @name CreateProductDTO
 type createProductDTO struct {
 	// Descrição completa do produto.
 	Description string `json:"description" example:"Smartphone X Pro 256GB"`
@@ -22,19 +23,37 @@ type createProductDTO struct {
 	CategoryID string `json:"category_id" example:"cat_abc123def456"`
 }
 
+// categoryInProductDTO representa a categoria associada a um produto.
+// @name CategoryInProductDTO
+type categoryInProductDTO struct {
+	CategoryID  string `json:"category_id" example:"cat_2a1b3c4d5e"`
+	Description string `json:"description" example:"Eletrônicos"`
+}
+
 // productDTO representa a estrutura de um produto retornado pela API.
+// @name ProductDTO
 type productDTO struct {
 	audit.Audit
-	// ID público do produto.
-	ProductID string `json:"product_id" example:"prod_xyz789uvw012"`
-	// Exemplo de como o ID do produto é formatado.
-	// swagger:example prod_xyz789uvw012
+	ProductID        string               `json:"product_id" example:"prod_xyz789uvw012"`
+	Description      string               `json:"description" example:"Smartphone X Pro 256GB"`
+	ShortDescription string               `json:"short_description" example:"Smartphone X Pro"`
+	UnitOfMeasure    string               `json:"unit_of_measure" example:"UN"`
+	Status           string               `json:"status" example:"INACTIVE"`
+	Category         categoryInProductDTO `json:"category"`
 }
 
 func toProductDTO(p *product.Product) productDTO {
 	return productDTO{
-		ProductID: publicid.PublicID(p.ProductID).ToPublic(),
-		Audit:     p.Audit,
+		ProductID:        publicid.PublicID(p.ProductID).ToPublic(),
+		Audit:            p.Audit,
+		Description:      p.Description,
+		ShortDescription: p.ShortDescription,
+		UnitOfMeasure:    p.UnitOfMeasure,
+		Status:           string(p.Status),
+		Category: categoryInProductDTO{
+			CategoryID:  p.Category.CategoryID.ToPublic(),
+			Description: p.Category.Description,
+		},
 	}
 }
 

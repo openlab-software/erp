@@ -8,6 +8,15 @@ import (
 	"gorm.io/gorm"
 )
 
+func EnsureSchema(db *gorm.DB, schemas ...string) error {
+	for _, schema := range schemas {
+		if err := db.Exec("CREATE SCHEMA IF NOT EXISTS " + schema).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func Connect() (*gorm.DB, error) {
 	host := os.Getenv("POSTGRES_HOST")
 	port := os.Getenv("POSTGRES_PORT")

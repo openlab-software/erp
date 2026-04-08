@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -22,17 +23,25 @@ type application struct {
 	config config
 }
 
-type config struct {
+type httpConfig struct {
 	addr string
+	path string
+}
+
+type config struct {
+	http httpConfig
 }
 
 func (app *application) run() error {
 	godotenv.Load(".env.dev")
-	router := mux.NewRouter()
 
 	gormDB, err := db.Connect()
 	if err != nil {
 		log.Fatal("postgres", err)
+	}
+
+	if err := db.EnsureSchema(gormDB, "catalog"); err != nil {
+		log.Fatal("postgres schema", err)
 	}
 
 	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher(event.CatalogEvents)
@@ -49,13 +58,15 @@ func (app *application) run() error {
 	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
 	productSvc := services.NewProductService(productRepo, eventPublisher)
 
+	router := mux.NewRouter()
+
 	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
-	v1 := router.PathPrefix("/v1").Subrouter()
+	v1 := router.PathPrefix(fmt.Sprintf("%s/v1", app.config.http.path)).Subrouter()
 	rest.NewCategoryRest(v1, categorySvc)
 	rest.NewProductRest(v1, productSvc)
 
 	srv := &http.Server{
-		Addr:    app.config.addr,
+		Addr:    app.config.http.addr,
 		Handler: router,
 	}
 

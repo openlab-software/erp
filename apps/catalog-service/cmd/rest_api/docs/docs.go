@@ -9,7 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://github.com/patrickdevbr-portfolio/erp",
+        "termsOfService": "https://github.com/openlab-software/erp",
         "contact": {
             "name": "Patrick Ribeiro",
             "url": "https://patrick.dev.br",
@@ -324,6 +324,21 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_infra_rest.categoryInProductDTO": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "description": "ID público da categoria.",
+                    "type": "string",
+                    "example": "cat_2a1b3c4d5e"
+                },
+                "description": {
+                    "description": "Descrição da categoria.",
+                    "type": "string",
+                    "example": "Eletrônicos"
+                }
+            }
+        },
         "internal_infra_rest.createCategoryDTO": {
             "type": "object",
             "required": [
@@ -331,7 +346,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "description": {
-                    "description": "A descrição da categoria.\nrequired: true",
+                    "description": "A descrição da categoria.",
                     "type": "string",
                     "example": "Eletrônicos"
                 }
@@ -365,8 +380,21 @@ const docTemplate = `{
         "internal_infra_rest.productDTO": {
             "type": "object",
             "properties": {
+                "category": {
+                    "description": "Categoria associada ao produto.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/internal_infra_rest.categoryInProductDTO"
+                        }
+                    ]
+                },
                 "created_at": {
                     "type": "string"
+                },
+                "description": {
+                    "description": "Descrição completa do produto.",
+                    "type": "string",
+                    "example": "Smartphone X Pro 256GB"
                 },
                 "modified_at": {
                     "type": "string"
@@ -375,6 +403,21 @@ const docTemplate = `{
                     "description": "ID público do produto.",
                     "type": "string",
                     "example": "prod_xyz789uvw012"
+                },
+                "short_description": {
+                    "description": "Descrição curta do produto.",
+                    "type": "string",
+                    "example": "Smartphone X Pro"
+                },
+                "status": {
+                    "description": "Status do produto (ACTIVE, INACTIVE).",
+                    "type": "string",
+                    "example": "INACTIVE"
+                },
+                "unit_of_measure": {
+                    "description": "Unidade de medida (ex: UN, KG, MT).",
+                    "type": "string",
+                    "example": "UN"
                 }
             }
         }
@@ -385,7 +428,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/v1",
+	BasePath:         "/catalog-service/v1",
 	Schemes:          []string{"http", "https"},
 	Title:            "Catalog Service API",
 	Description:      "Serviço responsável por gerenciar o catálogo de produtos dentro do ERP.\nFaz parte da arquitetura de microserviços utilizada no portfólio de Patrick Ribeiro.",
