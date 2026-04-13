@@ -23,13 +23,13 @@ func toStockEntity(s *stock.Stock) *stockEntity {
 	}
 }
 
-func toItemEntity(i *stock.StockItem) *stockItemEntity {
+func toItemEntity(i *stock.StockItem, catalogProductID uint) *stockItemEntity {
 	return &stockItemEntity{
-		ProductID:    i.ProductID,
-		MinValue:     i.MinValue,
-		CurrentValue: i.CurrentValue,
-		MaxValue:     i.MaxValue,
-		Stock:        toStockEntity(&i.Stock),
+		CatalogProductID: catalogProductID,
+		MinValue:         i.MinValue,
+		CurrentValue:     i.CurrentValue,
+		MaxValue:         i.MaxValue,
+		Stock:            toStockEntity(&i.Stock),
 	}
 }
 
@@ -42,14 +42,14 @@ func toStockDomain(e *stockEntity) *stock.Stock {
 
 type stockItemEntity struct {
 	gorm.Model
-	ID           uint
-	PublicID     string
-	ProductID    string
-	MinValue     *int
-	CurrentValue int
-	MaxValue     *int
-	StockID      uint
-	Stock        *stockEntity
+	ID               uint
+	PublicID         string
+	CatalogProductID uint `gorm:"not null"`
+	MinValue         *int
+	CurrentValue     int
+	MaxValue         *int
+	StockID          uint
+	Stock            *stockEntity
 }
 
 func (stockItemEntity) TableName() string {

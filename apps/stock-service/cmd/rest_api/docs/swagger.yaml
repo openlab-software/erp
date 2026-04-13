@@ -1,5 +1,41 @@
 basePath: /v1
 definitions:
+  internal_infra_rest.createReassignmentDTO:
+    properties:
+      from_stock_id:
+        description: ID público do estoque de origem.
+        example: stock_abc123def456
+        type: string
+      items:
+        description: Itens a serem remanejados.
+        items:
+          $ref: '#/definitions/internal_infra_rest.createReassignmentItemDTO'
+        minItems: 1
+        type: array
+      to_stock_id:
+        description: ID público do estoque de destino.
+        example: stock_def456ghi789
+        type: string
+    required:
+    - from_stock_id
+    - items
+    - to_stock_id
+    type: object
+  internal_infra_rest.createReassignmentItemDTO:
+    properties:
+      product_id:
+        description: ID público do produto.
+        example: prod_xyz789uvw012
+        type: string
+      quantity:
+        description: Quantidade a remanejar.
+        example: 10
+        minimum: 1
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
   internal_infra_rest.createStockDTO:
     properties:
       description:
@@ -8,6 +44,45 @@ definitions:
         type: string
     required:
     - description
+    type: object
+  internal_infra_rest.reassignmentDTO:
+    properties:
+      created_at:
+        type: string
+      from_stock_id:
+        description: ID público do estoque de origem.
+        example: stock_abc123def456
+        type: string
+      items:
+        description: Itens remanejados.
+        items:
+          $ref: '#/definitions/internal_infra_rest.reassignmentItemDTO'
+        type: array
+      modified_at:
+        type: string
+      reassignment_id:
+        description: ID público do remanejamento.
+        example: stock_reassignment_abc123
+        type: string
+      to_stock_id:
+        description: ID público do estoque de destino.
+        example: stock_def456ghi789
+        type: string
+    type: object
+  internal_infra_rest.reassignmentItemDTO:
+    properties:
+      created_at:
+        type: string
+      modified_at:
+        type: string
+      product_id:
+        description: ID público do produto.
+        example: prod_xyz789uvw012
+        type: string
+      quantity:
+        description: Quantidade remanejada.
+        example: 10
+        type: integer
     type: object
   internal_infra_rest.stockDTO:
     properties:
@@ -40,6 +115,40 @@ info:
   title: Stock Service API
   version: "1.0"
 paths:
+  /reassignments:
+    post:
+      consumes:
+      - application/json
+      description: Remeja produtos de um estoque de origem para um estoque de destino.
+      parameters:
+      - description: Payload para criação do remanejamento
+        in: body
+        name: reassignment
+        required: true
+        schema:
+          $ref: '#/definitions/internal_infra_rest.createReassignmentDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Remanejamento criado com sucesso
+          schema:
+            $ref: '#/definitions/internal_infra_rest.reassignmentDTO'
+        "400":
+          description: Requisição inválida
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Erro de validação
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria um remanejamento de estoque
+      tags:
+      - reassignments
   /stocks:
     get:
       description: Retorna uma lista de todos os estoques cadastrados.

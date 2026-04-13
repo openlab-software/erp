@@ -24,6 +24,58 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/reassignments": {
+            "post": {
+                "description": "Remeja produtos de um estoque de origem para um estoque de destino.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reassignments"
+                ],
+                "summary": "Cria um remanejamento de estoque",
+                "parameters": [
+                    {
+                        "description": "Payload para criação do remanejamento",
+                        "name": "reassignment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.createReassignmentDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Remanejamento criado com sucesso",
+                        "schema": {
+                            "$ref": "#/definitions/internal_infra_rest.reassignmentDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição inválida",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erro de validação",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/stocks": {
             "get": {
                 "description": "Retorna uma lista de todos os estoques cadastrados.",
@@ -99,6 +151,54 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "internal_infra_rest.createReassignmentDTO": {
+            "type": "object",
+            "required": [
+                "from_stock_id",
+                "items",
+                "to_stock_id"
+            ],
+            "properties": {
+                "from_stock_id": {
+                    "description": "ID público do estoque de origem.",
+                    "type": "string",
+                    "example": "stock_abc123def456"
+                },
+                "items": {
+                    "description": "Itens a serem remanejados.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/internal_infra_rest.createReassignmentItemDTO"
+                    }
+                },
+                "to_stock_id": {
+                    "description": "ID público do estoque de destino.",
+                    "type": "string",
+                    "example": "stock_def456ghi789"
+                }
+            }
+        },
+        "internal_infra_rest.createReassignmentItemDTO": {
+            "type": "object",
+            "required": [
+                "product_id",
+                "quantity"
+            ],
+            "properties": {
+                "product_id": {
+                    "description": "ID público do produto.",
+                    "type": "string",
+                    "example": "prod_xyz789uvw012"
+                },
+                "quantity": {
+                    "description": "Quantidade a remanejar.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 10
+                }
+            }
+        },
         "internal_infra_rest.createStockDTO": {
             "type": "object",
             "required": [
@@ -109,6 +209,60 @@ const docTemplate = `{
                     "description": "Descrição do estoque.",
                     "type": "string",
                     "example": "Estoque Central"
+                }
+            }
+        },
+        "internal_infra_rest.reassignmentDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "from_stock_id": {
+                    "description": "ID público do estoque de origem.",
+                    "type": "string",
+                    "example": "stock_abc123def456"
+                },
+                "items": {
+                    "description": "Itens remanejados.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_infra_rest.reassignmentItemDTO"
+                    }
+                },
+                "modified_at": {
+                    "type": "string"
+                },
+                "reassignment_id": {
+                    "description": "ID público do remanejamento.",
+                    "type": "string",
+                    "example": "stock_reassignment_abc123"
+                },
+                "to_stock_id": {
+                    "description": "ID público do estoque de destino.",
+                    "type": "string",
+                    "example": "stock_def456ghi789"
+                }
+            }
+        },
+        "internal_infra_rest.reassignmentItemDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "modified_at": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "description": "ID público do produto.",
+                    "type": "string",
+                    "example": "prod_xyz789uvw012"
+                },
+                "quantity": {
+                    "description": "Quantidade remanejada.",
+                    "type": "integer",
+                    "example": 10
                 }
             }
         },

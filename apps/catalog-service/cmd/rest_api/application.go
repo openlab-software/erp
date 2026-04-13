@@ -40,10 +40,6 @@ func (app *application) run() error {
 		log.Fatal("postgres", err)
 	}
 
-	if err := db.EnsureSchema(gormDB, "catalog"); err != nil {
-		log.Fatal("postgres schema", err)
-	}
-
 	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher(event.CatalogEvents)
 	if err != nil {
 		log.Fatal("rabbitmq", err)

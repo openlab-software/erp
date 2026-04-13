@@ -7,6 +7,11 @@ import (
 
 type StockID = publicid.PublicID
 
+func ParseStockID(s string) (StockID, error) {
+	publicID, err := publicid.ParsePublic("stock", s)
+	return StockID(publicID), err
+}
+
 type Stock struct {
 	audit.Audit
 	StockID     StockID

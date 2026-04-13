@@ -10,7 +10,7 @@ import (
 type productEntity struct {
 	gorm.Model
 	ID               uint
-	PublicID         string
+	PublicID         string `gorm:"uniqueIndex"`
 	Description      string
 	ShortDescription string
 	UnitOfMeasure    string

@@ -12,27 +12,29 @@ type PostgresStockRepository struct {
 }
 
 func NewPostgresStockRepository(db *gorm.DB) stock.StockRepository {
-	db.AutoMigrate(&stockEntity{})
-	db.AutoMigrate(&stockItemEntity{})
 	return &PostgresStockRepository{
 		DB: db,
 	}
 }
 
 func (r *PostgresStockRepository) InsertItem(ctx context.Context, item stock.StockItem) error {
-	var stockEntity stockEntity
-	stockResult := r.DB.WithContext(ctx).Where("public_id = ?", item.Stock.StockID.ToPublic()).First(&stockEntity)
-	if stockResult.Error != nil {
-		return stockResult.Error
+	db := r.DB.WithContext(ctx)
+
+	var stockEnt stockEntity
+	if err := db.Where("public_id = ?", item.Stock.StockID.ToPublic()).First(&stockEnt).Error; err != nil {
+		return err
 	}
 
-	itemEntity := toItemEntity(&item)
-	itemEntity.StockID = stockEntity.ID
+	catalogProductID, err := findCatalogProductInternalID(db, item.ProductID)
+	if err != nil {
+		return err
+	}
+
+	itemEntity := toItemEntity(&item, catalogProductID)
+	itemEntity.StockID = stockEnt.ID
 	itemEntity.Stock = nil
 
-	result := r.DB.WithContext(ctx).Create(&itemEntity)
-
-	return result.Error
+	return db.Create(&itemEntity).Error
 }
 
 func (r *PostgresStockRepository) InsertStock(ctx context.Context, s *stock.Stock) error {

@@ -44,8 +44,8 @@ func (app *application) run() error {
 		log.Fatal("postgres", err)
 	}
 
-	if err := db.EnsureSchema(gormDB, "stock"); err != nil {
-		log.Fatal("postgres schema", err)
+	if err := postgres.Migrate(gormDB); err != nil {
+		log.Fatal("postgres migrate", err)
 	}
 
 	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher(event.StockEvents)
@@ -66,11 +66,15 @@ func (app *application) run() error {
 	stockRepo := postgres.NewPostgresStockRepository(gormDB)
 	stockSvc := services.NewStockService(stockRepo, eventPublisher, eventSubscriber)
 
+	reassignmentRepo := postgres.NewPostgresReassignmentRepository(gormDB)
+	reassignmentSvc := services.NewReassignmentService(reassignmentRepo)
+
 	router.Handle("/docs", http.RedirectHandler("/docs/index.html", http.StatusMovedPermanently))
 	router.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
 
 	v1 := router.PathPrefix("/v1").Subrouter()
 	rest.NewStockRest(v1, stockSvc)
+	rest.NewReassignmentRest(v1, reassignmentSvc)
 
 	srv := &http.Server{
 		Addr:    app.config.addr,
