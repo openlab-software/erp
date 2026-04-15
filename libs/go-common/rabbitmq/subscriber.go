@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
+	"github.com/openlab-software/erp/libs/go-common/event"
 	"github.com/streadway/amqp"
 )
 

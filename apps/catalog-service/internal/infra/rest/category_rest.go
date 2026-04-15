@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/category"
+	"github.com/openlab-software/erp/libs/go-common/audit"
 )
 
 // createCategoryDTO define o payload para criar uma nova categoria.

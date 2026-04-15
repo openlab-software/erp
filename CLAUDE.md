@@ -46,7 +46,7 @@ cd apps/stock-service && air
 make catalog   # starts catalog-service with air
 
 # Build binary
-cd apps/catalog-service && go build -o ./bin/main.exe ./cmd/rest_api
+cd apps/catalog-service && go build -o ./bin/main.exe ./cmd/api
 
 # Generate Swagger docs
 make docs      # runs swag init for catalog-service
@@ -83,13 +83,13 @@ internal/
     ├── rest/              # HTTP handlers (Gorilla Mux)
     ├── postgres/          # GORM repository implementations
     └── amqpevent/         # RabbitMQ event publisher adapters
-cmd/rest_api/              # main.go entry point + Swagger docs
+cmd/api/              # main.go entry point + Swagger docs
 ```
 
 Key patterns:
 - Repository interfaces defined in `domain/`, implemented in `infra/postgres/`
 - Domain events (e.g., `ProductCreated`) published via `EventPublisher` wrapping RabbitMQ
-- Swagger docs are generated into `cmd/rest_api/docs/` via `swag init`
+- Swagger docs are generated into `cmd/api/docs/` via `swag init`
 
 ### Shared Go Library (`libs/go-common`)
 
@@ -104,7 +104,7 @@ Packages used across services:
 
 ### Event Flow
 
-Services publish domain events to RabbitMQ after state mutations. Other services subscribe to relevant events. The event publisher is wired at `cmd/rest_api/main.go` startup using the RabbitMQ connection from `libs/go-common/rabbitmq`.
+Services publish domain events to RabbitMQ after state mutations. Other services subscribe to relevant events. The event publisher is wired at `cmd/api/main.go` startup using the RabbitMQ connection from `libs/go-common/rabbitmq`.
 
 ### Frontend
 

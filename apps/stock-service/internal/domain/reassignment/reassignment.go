@@ -1,9 +1,9 @@
 package reassignment
 
 import (
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/stock"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/publicid"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/stock"
+	"github.com/openlab-software/erp/libs/go-common/audit"
+	"github.com/openlab-software/erp/libs/go-common/publicid"
 )
 
 type ReassignmentID = publicid.PublicID

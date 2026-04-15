@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/product"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/publicid"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/category"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/product"
+	"github.com/openlab-software/erp/libs/go-common/audit"
+	"github.com/openlab-software/erp/libs/go-common/publicid"
 )
 
 // createProductDTO representa o payload de entrada para criação de um produto.

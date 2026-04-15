@@ -1,9 +1,9 @@
 package postgres
 
 import (
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/product"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/category"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/product"
+	"github.com/openlab-software/erp/libs/go-common/audit"
 	"gorm.io/gorm"
 )
 

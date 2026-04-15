@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/category"
+	commondb "github.com/openlab-software/erp/libs/go-common/db"
 	"gorm.io/gorm"
 )
 
@@ -22,9 +23,8 @@ func NewPostgresCategoryRepository(db *gorm.DB) category.CategoryRepository {
 
 func (r *PostgresCategoryRepository) Insert(ctx context.Context, c *category.Category) error {
 	entity := toCategoryEntity(c)
-	result := r.DB.WithContext(ctx).Create(&entity)
-
-	return result.Error
+	transaction := commondb.TxFromContext(ctx, r.DB)
+	return transaction.WithContext(ctx).Create(&entity).Error
 }
 
 func (r *PostgresCategoryRepository) Find(ctx context.Context, description string) []category.Category {

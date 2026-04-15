@@ -3,7 +3,7 @@ package reassignment
 import (
 	"context"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/stock"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/stock"
 )
 
 type CreateReassignmentItemPayload struct {

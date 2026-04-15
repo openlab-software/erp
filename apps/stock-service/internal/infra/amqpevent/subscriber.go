@@ -1,8 +1,8 @@
 package amqpevent
 
 import (
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
+	"github.com/openlab-software/erp/libs/go-common/event"
+	"github.com/openlab-software/erp/libs/go-common/rabbitmq"
 )
 
 type EventSubscriber struct {

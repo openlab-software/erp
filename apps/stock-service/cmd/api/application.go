@@ -8,15 +8,16 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
-	_ "github.com/patrickdevbr-portfolio/erp/apps/stock-service/cmd/rest_api/docs"
+	_ "github.com/openlab-software/erp/apps/stock-service/cmd/api/docs"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/application/services"
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/infra/amqpevent"
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/infra/postgres"
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/infra/rest"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/db"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
+	"github.com/openlab-software/erp/apps/stock-service/internal/application/services"
+	"github.com/openlab-software/erp/apps/stock-service/internal/infra/amqpevent"
+	"github.com/openlab-software/erp/apps/stock-service/internal/infra/postgres"
+	"github.com/openlab-software/erp/apps/stock-service/internal/infra/rest"
+	"github.com/openlab-software/erp/libs/go-common/db"
+	"github.com/openlab-software/erp/libs/go-common/event"
+	"github.com/openlab-software/erp/libs/go-common/outbox"
+	"github.com/openlab-software/erp/libs/go-common/rabbitmq"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -33,12 +34,6 @@ func (app *application) run() error {
 
 	router := mux.NewRouter()
 
-	// oidcProvider, err := auth.NewOIDCProvider()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// auth.NewMiddleware(oidcProvider)(mux)
-
 	gormDB, err := db.Connect()
 	if err != nil {
 		log.Fatal("postgres", err)
@@ -48,23 +43,18 @@ func (app *application) run() error {
 		log.Fatal("postgres migrate", err)
 	}
 
-	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher(event.StockEvents)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer rabbitMQPublisher.Close()
-
 	rabbitMQSubscriber, err := rabbitmq.NewRabbitMQSubscriber(event.CatalogEvents, "stock-subscriber")
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer rabbitMQSubscriber.Close()
 
-	eventPublisher := amqpevent.NewEventPublisher(rabbitMQPublisher)
+	eventPublisher := outbox.NewOutboxPublisher(gormDB, "stock")
 	eventSubscriber := amqpevent.NewEventSubscriber(rabbitMQSubscriber)
 
+	txManager := db.NewTxManager(gormDB)
 	stockRepo := postgres.NewPostgresStockRepository(gormDB)
-	stockSvc := services.NewStockService(stockRepo, eventPublisher, eventSubscriber)
+	stockSvc := services.NewStockService(stockRepo, eventPublisher, eventSubscriber, txManager)
 
 	reassignmentRepo := postgres.NewPostgresReassignmentRepository(gormDB)
 	reassignmentSvc := services.NewReassignmentService(reassignmentRepo)

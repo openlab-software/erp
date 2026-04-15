@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/reassignment"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/reassignment"
 	"gorm.io/gorm"
 )
 

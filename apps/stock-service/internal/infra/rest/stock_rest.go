@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/stock"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/publicid"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/stock"
+	"github.com/openlab-software/erp/libs/go-common/audit"
+	"github.com/openlab-software/erp/libs/go-common/publicid"
 )
 
 // createStockDTO representa o payload de entrada para criação de um estoque.

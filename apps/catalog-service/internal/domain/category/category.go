@@ -1,8 +1,8 @@
 package category
 
 import (
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/publicid"
+	"github.com/openlab-software/erp/libs/go-common/audit"
+	"github.com/openlab-software/erp/libs/go-common/publicid"
 )
 
 type CategoryID = publicid.PublicID

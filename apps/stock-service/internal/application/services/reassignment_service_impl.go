@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/reassignment"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/reassignment"
 )
 
 type ReassignmentServiceImpl struct {

@@ -1,8 +1,10 @@
 package amqpevent
 
 import (
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
+	"context"
+
+	"github.com/openlab-software/erp/libs/go-common/event"
+	"github.com/openlab-software/erp/libs/go-common/rabbitmq"
 )
 
 type EventPublisher struct {
@@ -14,6 +16,6 @@ func NewEventPublisher(rabbitmq *rabbitmq.RabbitMQPublisher) event.Publisher {
 	return &EventPublisher{rabbitmq: rabbitmq}
 }
 
-func (p *EventPublisher) Publish(e event.Event) error {
+func (p *EventPublisher) Publish(_ context.Context, e event.Event) error {
 	return p.rabbitmq.Publish(e.Event, e)
 }

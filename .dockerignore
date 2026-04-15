@@ -1,2 +1,6 @@
-!.next
-!public
+# Ignore everything by default
+*
+
+# Allow bin directories (compiled binaries)
+!apps/catalog-service/bin/
+!apps/stock-service/bin/

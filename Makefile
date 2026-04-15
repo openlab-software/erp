@@ -1,7 +1,7 @@
 # Nome do executável do Air (pode ser "air" se estiver instalado globalmente)
 AIR := air
 
-GENERATE_DOCS_COMMAND := swag init -g ./cmd/rest_api/main.go --output ./cmd/rest_api/docs --parseDependency
+GENERATE_DOCS_COMMAND := swag init -g ./cmd/api/main.go --output ./cmd/api/docs --parseDependency
 
 # Caminho dos apps
 CATALOG_SERVICE_DIR := apps/catalog-service
@@ -13,19 +13,18 @@ STOCK_SERVICE_DIR := apps/stock-service
 help:
 	@echo "Comandos disponíveis:"
 	@echo "make docs     -> gera os docs do swagger"
-	@echo "make catalog        -> roda o Catalog Service com air"
+	@echo "make catalog  -> roda o Catalog Service (api + relay)"
+	@echo "make stock    -> roda o Stock Service (api + relay)"
 
-# --- Content Service ---
 docs:
 	@echo "Gerando docs do catalog-service..."
 	cd $(CATALOG_SERVICE_DIR) && $(GENERATE_DOCS_COMMAND)
 	cd $(STOCK_SERVICE_DIR) && $(GENERATE_DOCS_COMMAND)
 
-# --- Page Service (exemplo opcional) ---
 catalog:
 	@echo "Iniciando catalog-service..."
-	cd $(CATALOG_SERVICE_DIR) && $(AIR)
+	@cd $(CATALOG_SERVICE_DIR) && bash -c "$(AIR) -c .air.relay.toml & $(AIR) -c .air.api.toml; wait"
 
 stock:
 	@echo "Iniciando stock-service..."
-	cd $(STOCK_SERVICE_DIR) && $(AIR)
+	@cd $(STOCK_SERVICE_DIR) && bash -c "trap 'kill 0' EXIT; $(AIR) -c .air.relay.toml & $(AIR) -c .air.api.toml; wait"

@@ -1,0 +1,12 @@
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates tzdata && \
+    addgroup -S app && adduser -S app -G app
+
+WORKDIR /app
+COPY apps/catalog-service/bin/api* .
+RUN mv api.exe api 2>/dev/null || true
+
+USER app
+EXPOSE 8080
+ENTRYPOINT ["/app/api"]

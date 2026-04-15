@@ -8,14 +8,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
-	_ "github.com/patrickdevbr-portfolio/erp/apps/catalog-service/cmd/rest_api/docs"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/application/services"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/amqpevent"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/postgres"
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/infra/rest"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/db"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/rabbitmq"
+	_ "github.com/openlab-software/erp/apps/catalog-service/cmd/api/docs"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/application/services"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/infra/postgres"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/infra/rest"
+	"github.com/openlab-software/erp/libs/go-common/db"
+	"github.com/openlab-software/erp/libs/go-common/outbox"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -40,19 +38,18 @@ func (app *application) run() error {
 		log.Fatal("postgres", err)
 	}
 
-	rabbitMQPublisher, err := rabbitmq.NewRabbitMQPublisher(event.CatalogEvents)
-	if err != nil {
-		log.Fatal("rabbitmq", err)
+	if err := outbox.Migrate(gormDB, "catalog"); err != nil {
+		log.Fatal("outbox migrate", err)
 	}
-	defer rabbitMQPublisher.Close()
 
-	eventPublisher := amqpevent.NewEventPublisher(rabbitMQPublisher)
+	eventPublisher := outbox.NewOutboxPublisher(gormDB, "catalog")
+	txManager := db.NewTxManager(gormDB)
 
 	categoryRepo := postgres.NewPostgresCategoryRepository(gormDB)
 	productRepo := postgres.NewPostgresProductRepository(gormDB)
 
-	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher)
-	productSvc := services.NewProductService(productRepo, eventPublisher)
+	categorySvc := services.NewCategoryService(categoryRepo, eventPublisher, txManager)
+	productSvc := services.NewProductService(productRepo, eventPublisher, txManager)
 
 	router := mux.NewRouter()
 

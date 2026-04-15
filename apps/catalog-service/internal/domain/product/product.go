@@ -1,9 +1,9 @@
 package product
 
 import (
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/publicid"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/category"
+	"github.com/openlab-software/erp/libs/go-common/audit"
+	"github.com/openlab-software/erp/libs/go-common/publicid"
 )
 
 const (

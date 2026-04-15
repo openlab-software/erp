@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/stock"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/stock"
+	commondb "github.com/openlab-software/erp/libs/go-common/db"
+	"github.com/openlab-software/erp/libs/go-common/event"
 )
 
 type StockServiceImpl struct {
 	stock.StockService
 	repo stock.StockRepository
 	pub  event.Publisher
+	txm  commondb.TxManager
 }
 
 type productCreatedPayload struct {
@@ -24,33 +26,38 @@ type productCreatedEvent struct {
 	Payload productCreatedPayload `json:"payload"`
 }
 
-func NewStockService(repo stock.StockRepository, pub event.Publisher, sub event.Subscriber) stock.StockService {
+func NewStockService(repo stock.StockRepository, pub event.Publisher, sub event.Subscriber, txm commondb.TxManager) stock.StockService {
 	svc := &StockServiceImpl{
 		repo: repo,
 		pub:  pub,
+		txm:  txm,
 	}
 
 	sub.Subscribe([]string{"product.created"}, func(body []byte) error {
-		var event productCreatedEvent
-		if err := json.Unmarshal(body, &event); err != nil {
+		var e productCreatedEvent
+		if err := json.Unmarshal(body, &e); err != nil {
 			return err
 		}
-
-		return svc.InitItems(context.Background(), event.Payload.ID)
+		return svc.InitItems(context.Background(), e.Payload.ID)
 	})
 
 	return svc
 }
 
+// InitItems creates a StockItem for every existing stock when a new product is registered.
+// All inserts run inside a single transaction: either every stock gets the item, or none do.
 func (svc *StockServiceImpl) InitItems(ctx context.Context, productID string) error {
 	allStocks := svc.repo.FindStocks(ctx)
 
-	for _, s := range allStocks {
-		newStockItem := stock.NewEmptyItem(productID, *s)
-
-		svc.repo.InsertItem(ctx, *newStockItem)
-	}
-	return nil
+	return svc.txm.RunInTx(ctx, func(txCtx context.Context) error {
+		for _, s := range allStocks {
+			newItem := stock.NewEmptyItem(productID, *s)
+			if err := svc.repo.InsertItem(txCtx, *newItem); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (svc *StockServiceImpl) CreateStock(ctx context.Context, payload stock.CreateStockPayload) (*stock.Stock, error) {
@@ -58,6 +65,5 @@ func (svc *StockServiceImpl) CreateStock(ctx context.Context, payload stock.Crea
 	if err := svc.repo.InsertStock(ctx, newStock); err != nil {
 		return nil, err
 	}
-
 	return newStock, nil
 }

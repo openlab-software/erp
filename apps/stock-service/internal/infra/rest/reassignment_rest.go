@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/reassignment"
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/stock"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/audit"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/reassignment"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/stock"
+	"github.com/openlab-software/erp/libs/go-common/audit"
 )
 
 // createReassignmentItemDTO representa um item a ser remanejado.

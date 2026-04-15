@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/product"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/product"
+	commondb "github.com/openlab-software/erp/libs/go-common/db"
 	"gorm.io/gorm"
 )
 
@@ -21,19 +22,18 @@ func NewPostgresProductRepository(db *gorm.DB) product.ProductRepository {
 }
 
 func (r *PostgresProductRepository) Insert(ctx context.Context, p *product.Product) error {
+	db := commondb.TxFromContext(ctx, r.DB)
 	entity := toProductEntity(p)
 
 	var category *categoryEntity
-	if result := r.DB.WithContext(ctx).Where("public_id = ?", p.Category.CategoryID.ToPublic()).First(&category); result.Error != nil {
+	if result := db.WithContext(ctx).Where("public_id = ?", p.Category.CategoryID.ToPublic()).First(&category); result.Error != nil {
 		return result.Error
 	}
 
 	entity.Category = category
 	entity.CategoryID = category.ID
 
-	result := r.DB.Create(&entity)
-
-	return result.Error
+	return db.WithContext(ctx).Create(&entity).Error
 }
 
 func (r *PostgresProductRepository) Update(ctx context.Context, p *product.Product) error {

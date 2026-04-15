@@ -3,7 +3,8 @@ package postgres
 import (
 	"context"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/stock-service/internal/domain/stock"
+	"github.com/openlab-software/erp/apps/stock-service/internal/domain/stock"
+	commondb "github.com/openlab-software/erp/libs/go-common/db"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +19,7 @@ func NewPostgresStockRepository(db *gorm.DB) stock.StockRepository {
 }
 
 func (r *PostgresStockRepository) InsertItem(ctx context.Context, item stock.StockItem) error {
-	db := r.DB.WithContext(ctx)
+	db := commondb.TxFromContext(ctx, r.DB).WithContext(ctx)
 
 	var stockEnt stockEntity
 	if err := db.Where("public_id = ?", item.Stock.StockID.ToPublic()).First(&stockEnt).Error; err != nil {
@@ -38,10 +39,9 @@ func (r *PostgresStockRepository) InsertItem(ctx context.Context, item stock.Sto
 }
 
 func (r *PostgresStockRepository) InsertStock(ctx context.Context, s *stock.Stock) error {
+	db := commondb.TxFromContext(ctx, r.DB)
 	entity := toStockEntity(s)
-	result := r.DB.WithContext(ctx).Create(&entity)
-
-	return result.Error
+	return db.WithContext(ctx).Create(&entity).Error
 }
 
 func (r *PostgresStockRepository) FindStocks(ctx context.Context) []*stock.Stock {

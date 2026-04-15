@@ -1,6 +1,9 @@
 package event
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 const (
 	CatalogEvents = "catalog.events"
@@ -10,7 +13,7 @@ const (
 type Handler func(body []byte) error
 
 type Publisher interface {
-	Publish(e Event) error
+	Publish(ctx context.Context, e Event) error
 }
 
 type Subscriber interface {

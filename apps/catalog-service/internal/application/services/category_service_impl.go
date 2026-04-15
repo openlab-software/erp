@@ -4,42 +4,44 @@ import (
 	"context"
 	"errors"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
-	"github.com/patrickdevbr-portfolio/erp/libs/go-common/event"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/category"
+	commondb "github.com/openlab-software/erp/libs/go-common/db"
+	"github.com/openlab-software/erp/libs/go-common/event"
 )
 
 type CategoryServiceImpl struct {
 	category.CategoryService
 	repo category.CategoryRepository
 	pub  event.Publisher
+	txm  commondb.TxManager
 }
 
-func NewCategoryService(repo category.CategoryRepository, pub event.Publisher) category.CategoryService {
-	return &CategoryServiceImpl{
-		repo: repo,
-		pub:  pub,
-	}
+func NewCategoryService(repo category.CategoryRepository, pub event.Publisher, txm commondb.TxManager) category.CategoryService {
+	return &CategoryServiceImpl{repo: repo, pub: pub, txm: txm}
 }
 
 func (svc *CategoryServiceImpl) Create(ctx context.Context, payload *category.CreateCategoryPayload) (*category.Category, error) {
-	sameDescription := svc.repo.FindByDescription(ctx, payload.Description)
-
-	if sameDescription != nil {
+	if svc.repo.FindByDescription(ctx, payload.Description) != nil {
 		return nil, errors.New("a category with same description already exists")
 	}
 
-	newCategory := category.NewCategory(payload.Description)
-	if err := svc.repo.Insert(ctx, newCategory); err != nil {
-		return nil, err
-	}
+	var newCategory *category.Category
+	err := svc.txm.RunInTx(ctx, func(txCtx context.Context) error {
+		newCategory = category.NewCategory(payload.Description)
+		if err := svc.repo.Insert(txCtx, newCategory); err != nil {
+			return err
+		}
 
-	eventPayload := category.CategoryCreatedPayload{
-		ID:          string(newCategory.CategoryID),
-		Description: newCategory.Description,
-	}
-	svc.pub.Publish(event.NewEvent(category.CategoryCreatedEvent, eventPayload))
-
-	return newCategory, nil
+		payload := category.CategoryCreatedPayload{
+			ID:          string(newCategory.CategoryID),
+			Description: newCategory.Description,
+		}
+		return svc.pub.Publish(
+			txCtx,
+			event.NewEvent(category.CategoryCreatedEvent, payload),
+		)
+	})
+	return newCategory, err
 }
 
 func (svc *CategoryServiceImpl) GetById(ctx context.Context, id category.CategoryID) *category.Category {

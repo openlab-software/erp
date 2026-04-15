@@ -3,7 +3,7 @@ package product
 import (
 	"context"
 
-	"github.com/patrickdevbr-portfolio/erp/apps/catalog-service/internal/domain/category"
+	"github.com/openlab-software/erp/apps/catalog-service/internal/domain/category"
 )
 
 type ProductService interface {
