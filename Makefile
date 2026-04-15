@@ -16,6 +16,12 @@ help:
 	@echo "make catalog  -> roda o Catalog Service (api + relay)"
 	@echo "make stock    -> roda o Stock Service (api + relay)"
 
+build:
+	@echo "Compilando catalog-service..."
+	cd $(CATALOG_SERVICE_DIR) && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/api ./cmd/api
+	@echo "Compilando stock-service..."
+	cd $(STOCK_SERVICE_DIR) && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/api ./cmd/api
+
 docs:
 	@echo "Gerando docs do catalog-service..."
 	cd $(CATALOG_SERVICE_DIR) && $(GENERATE_DOCS_COMMAND)
