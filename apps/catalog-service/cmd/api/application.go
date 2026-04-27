@@ -17,19 +17,6 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-type application struct {
-	config config
-}
-
-type httpConfig struct {
-	addr string
-	path string
-}
-
-type config struct {
-	http httpConfig
-}
-
 func (app *application) run() error {
 	godotenv.Load(".env.dev")
 
@@ -38,11 +25,11 @@ func (app *application) run() error {
 		log.Fatal("postgres", err)
 	}
 
-	if err := outbox.Migrate(gormDB, "catalog"); err != nil {
+	if err := outbox.Migrate(gormDB, app.config.db.schema); err != nil {
 		log.Fatal("outbox migrate", err)
 	}
 
-	eventPublisher := outbox.NewOutboxPublisher(gormDB, "catalog")
+	eventPublisher := outbox.NewOutboxPublisher(gormDB, app.config.db.schema)
 	txManager := db.NewTxManager(gormDB)
 
 	categoryRepo := postgres.NewPostgresCategoryRepository(gormDB)
@@ -56,6 +43,7 @@ func (app *application) run() error {
 	router.Handle("/docs", http.RedirectHandler("/docs/index.html", http.StatusMovedPermanently))
 	router.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
 	v1 := router.PathPrefix(fmt.Sprintf("%s/v1", app.config.http.path)).Subrouter()
+
 	rest.NewCategoryRest(v1, categorySvc)
 	rest.NewProductRest(v1, productSvc)
 

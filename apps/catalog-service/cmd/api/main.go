@@ -4,6 +4,24 @@ import (
 	"log"
 )
 
+type httpConfig struct {
+	addr string
+	path string
+}
+
+type dbConfig struct {
+	schema string
+}
+
+type config struct {
+	http httpConfig
+	db   dbConfig
+}
+
+type application struct {
+	config config
+}
+
 // @title Catalog Service API
 // @version 1.0
 // @description Serviço responsável por gerenciar o catálogo de produtos dentro do ERP.
@@ -29,6 +47,9 @@ func main() {
 			http: httpConfig{
 				addr: ":8080",
 				path: "/catalog-service",
+			},
+			db: dbConfig{
+				schema: "catalog",
 			},
 		},
 	}
