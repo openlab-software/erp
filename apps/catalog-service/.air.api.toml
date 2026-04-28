@@ -4,8 +4,8 @@ tmp_dir = "bin"
 
 [build]
 args_bin = []
-bin = "./bin/api"
-cmd = "go build -o ./bin/api$(go env GOEXE) ./cmd/api"
+bin = "./bin/api$(go env GOEXE)"
+cmd = "go build -o ./bin/api$(go env GOEXE) ./cmd/api$(go env GOEXE)"
 delay = 1000
 exclude_dir = ["assets", "bin", "vendor", "testdata"]
 exclude_file = []

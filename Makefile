@@ -28,10 +28,19 @@ docs:
 	cd $(STOCK_SERVICE_DIR) && $(GENERATE_DOCS_COMMAND)
 
 catalog:
-	@echo "Iniciando catalog-service (api + relay)..."
+	@make -j 2 catalog-api catalog-relay
+
+catalog-api:
 	@cd $(CATALOG_SERVICE_DIR) && $(AIR) -c .air.api.toml
-	@cd $(CATALOG_SERVICE_DIR) && $(AIR) -c .air.relay.toml
+
+catalog-relay:
+	@cd $(CATALOG_SERVICE_DIR) && $(AIR) -c .air.relay.toml	
 
 stock:
-	@echo "Iniciando stock-service (api + relay)..."
-	@cd $(STOCK_SERVICE_DIR) && ( $(AIR) -c .air.api.toml & $(AIR) -c .air.relay.toml; wait; )
+	@make -j 2 stock-api stock-relay
+
+stock-api:
+	@cd $(STOCK_SERVICE_DIR) && $(AIR) -c .air.api.toml	
+
+stock-relay:
+	@cd $(STOCK_SERVICE_DIR) && $(AIR) -c .air.relay.toml	

@@ -1,0 +1,2 @@
+overrides:
+  '@openlab-ui/react': link:../../../ui/packages/react

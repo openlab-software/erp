@@ -1,9 +1,13 @@
-import { Outlet } from '@modern-js/runtime/router';
+import { Outlet } from "@modern-js/runtime/router";
+import { OpenLabUIProvider } from "@openlab-ui/react";
+import "@openlab-ui/react/styles.css";
 
 export default function Layout() {
   return (
-    <div>
-      <Outlet />
-    </div>
+    <OpenLabUIProvider>
+      <div>
+        <Outlet />
+      </div>
+    </OpenLabUIProvider>
   );
 }

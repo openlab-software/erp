@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm root *)",
+      "Bash(ls \"$\\(pnpm root -g\\)/@openlab-ui/openlab-ui/\")",
+      "Bash(cat \"$\\(pnpm root -g\\)/@openlab-ui/openlab-ui/package.json\")",
+      "Bash(ls \"$\\(pnpm root -g\\)/@openlab-ui/openlab-ui/packages/\")"
+    ]
+  }
+}

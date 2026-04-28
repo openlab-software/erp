@@ -4,8 +4,8 @@ tmp_dir = "bin"
 
 [build]
 args_bin = []
-bin = "./bin/relay"
-cmd = "go build -o ./bin/relay$(go env GOEXE) ./cmd/relay"
+bin = "./bin/relay$(go env GOEXE)"
+cmd = "go build -o ./bin/relay$(go env GOEXE) ./cmd/relay$(go env GOEXE)"
 delay = 1000
 exclude_dir = ["assets", "bin", "vendor", "testdata"]
 exclude_file = []
