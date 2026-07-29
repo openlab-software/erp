@@ -15,7 +15,14 @@ import {
   TableWrap,
 } from "@/components/ui";
 import { Link, useNavigate } from "@modern-js/runtime/router";
-import { Button } from "@openlab-ui/react";
+import {
+  Button,
+  Field,
+  Input,
+  InputGroup,
+  InputGroupInput,
+  InputGroupAddon,
+} from "@openlab-ui/react";
 import { useMemo, useState } from "react";
 import { PRODUCTS, fmtBRL, fmtNum } from "../../data";
 
@@ -85,13 +92,19 @@ export default function Produtos() {
       <TableWrap>
         <TableToolbar>
           <SearchWrap>
-            <Icon name="search" size={13} />
-            <FInput
-              placeholder="Buscar por SKU, nome ou fornecedor…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ width: 320 }}
-            />
+            <Field>
+              <InputGroup>
+                <InputGroupAddon>
+                  <Icon name="search" size={13} />
+                </InputGroupAddon>
+                <InputGroupInput
+                  style={{ width: "400px" }}
+                  placeholder="Buscar por SKU, nome ou fornecedor…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </InputGroup>
+            </Field>
           </SearchWrap>
           <div style={{ display: "flex", gap: 6, marginLeft: 8 }}>
             {categories.slice(0, 6).map((c) => (

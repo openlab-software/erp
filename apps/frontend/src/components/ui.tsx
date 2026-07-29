@@ -167,12 +167,6 @@ export const SearchWrap = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  & > svg {
-    position: absolute;
-    left: 9px;
-    color: var(--ink-3);
-    pointer-events: none;
-  }
 `;
 
 export const FInput = styled.input`
