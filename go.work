@@ -1,7 +1,0 @@
-go 1.24.2
-
-use (
-	./apps/catalog-service
-	./apps/stock-service
-	./libs/go-common
-)

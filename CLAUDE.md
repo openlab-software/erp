@@ -4,24 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a hybrid Go + Node.js monorepo for an ERP system. It uses Turbo for frontend orchestration and a Go workspace for backend services. Services communicate via RabbitMQ events and expose REST APIs.
+This is a Java + Node.js monorepo for an ERP system. `catalog-service` and `stock-service` are Java/Quarkus (Maven) microservices at the repository root; `frontend` (Modern.js/React) and `apps/buy-service` (Node/NestJS) are the Node side, orchestrated with Turbo/Yarn workspaces. Services communicate via RabbitMQ events and expose REST APIs.
+
+`catalog-service` and `stock-service` were migrated big-bang from an earlier Go implementation (DDD + GORM + a shared `go-common` library). That Go code, `go.work`, and `libs/go-common` have been removed from the working tree; the Go history is still recoverable via `git log`/`git show` if ever needed for behavioral reference. Both new services implement the full spec in `.kiro/specs/catalog-stock-crud/requirements.md` (paginated listings, PUT/PATCH/DELETE with lifecycle and referential-integrity rules, domain events, standardized error responses, transactional outbox).
 
 ## Project Layout
 
 ```
 erp/
+├── catalog-service/       # Java/Quarkus microservice (products, categories) — port 8080
+├── stock-service/         # Java/Quarkus microservice (stock management) — port 8081
+├── frontend/               # Modern.js/React app — port 3000
 ├── apps/
-│   ├── catalog-service/   # Go microservice (products, categories) — port 8080
-│   ├── stock-service/     # Go microservice (stock management) — port 8081
-│   └── frontend/          # Modern.js/React app — port 3000
+│   └── buy-service/       # Node/NestJS microservice — out of scope for the Java migration
 ├── libs/
-│   ├── go-common/         # Shared Go packages (db, auth, event, logger, rabbitmq, publicid)
-│   └── ts-common/         # Shared TypeScript package (@cms/ts-common)
+│   └── ts-common/         # Shared TypeScript package (@cms/ts-common), used by frontend
 ├── .devops/
-│   ├── docker/            # Dockerfiles
+│   ├── docker/            # Dockerfiles (frontend); catalog/stock now ship their own
+│   │                       # Dockerfile.jvm under <service>/src/main/docker/
 │   └── k8s/               # Kubernetes manifests
-├── go.work                # Go workspace (catalog-service, stock-service, go-common)
-├── package.json           # Node.js workspace root (Yarn)
+├── package.json           # Node.js workspace root (Yarn), workspaces: apps/*, frontend, libs/*
 ├── dev.docker-compose.yaml
 └── Makefile
 ```
@@ -35,76 +37,75 @@ docker compose -f dev.docker-compose.yaml up -d
 # Starts: PostgreSQL 15 (5432), RabbitMQ (5672, UI: 15672), PgAdmin (5050)
 ```
 
-### Go Services (catalog-service & stock-service)
+### Java Services (catalog-service & stock-service)
+
+Each service is a standalone Maven/Quarkus project (Java 21). **Use a Java 21 JDK to build/run** — newer JDKs (e.g. 25) currently break the Quarkus/Hibernate bytecode enhancement step (Byte Buddy incompatibility). Point `JAVA_HOME` at a JDK 21 install before running `mvn`.
 
 ```bash
-# Hot reload with Air (from service directory)
-cd apps/catalog-service && air
-cd apps/stock-service && air
+# Hot-reload dev mode (from the service directory, or via the Makefile)
+cd catalog-service && mvn quarkus:dev
+cd stock-service && mvn quarkus:dev
 
 # Or via Makefile
-make catalog   # starts catalog-service with air
+make catalog   # mvn quarkus:dev for catalog-service
+make stock     # mvn quarkus:dev for stock-service
+make build     # mvn package for both services
 
-# Build binary
-cd apps/catalog-service && go build -o ./bin/main.exe ./cmd/api
-
-# Generate Swagger docs
-make docs      # runs swag init for catalog-service
+# Build a jar directly
+cd catalog-service && mvn package   # -> target/quarkus-app/quarkus-run.jar
 ```
+
+Each service reads Postgres/RabbitMQ connection settings from environment variables (see below), with dev-friendly defaults baked into `src/main/resources/application.properties`. Flyway migrations (`src/main/resources/db/migration`) own the schema — Hibernate ORM does not auto-generate DDL. OpenAPI/Swagger UI is available at `/docs` on each service.
 
 ### Frontend
 
 ```bash
-cd apps/frontend
-pnpm install
-pnpm dev       # Modern.js dev server
-pnpm build
-pnpm serve     # preview production build
+cd frontend
+yarn install
+yarn dev       # Modern.js dev server
+yarn build
+yarn serve     # preview production build
 ```
 
 ### Monorepo (Turbo)
 
 ```bash
-yarn dev       # start all frontend workspaces
-yarn build     # build all workspaces
+yarn dev       # start all Node workspaces (frontend, apps/buy-service)
+yarn build     # build all Node workspaces
 ```
 
 ## Architecture
 
-### Go Microservices — Internal Structure
+### Java Microservices — Internal Structure
 
-Both Go services follow Domain-Driven Design layering:
+Both `catalog-service` and `stock-service` follow the same Domain-Driven Design layering (mirroring the DDD split used by the original Go services, reimplemented independently per service — there is no shared Java library):
 
 ```
-internal/
-├── domain/<entity>/       # Entities, repository interfaces, domain events
-├── application/services/  # Use cases / business logic (*_service_impl.go)
+src/main/java/software/openlab/<catalog|stock>/
+├── domain/<entity>/          # Domain objects, repository interfaces, event payloads
+├── domain/shared/            # Id records, ApiException hierarchy (BadRequest/NotFound/Conflict/...), PageResult, EventPublisher
+├── application/usecase/<entity>/  # One class per operation (CreateXUseCase, GetXByIdUseCase, ListXUseCase, UpdateXUseCase,
+│                                    # DeleteXUseCase, ...), each with a single `execute(...)` method — no umbrella *Service interface
 └── infra/
-    ├── rest/              # HTTP handlers (Gorilla Mux)
-    ├── postgres/          # GORM repository implementations
-    └── amqpevent/         # RabbitMQ event publisher adapters
-cmd/api/              # main.go entry point + Swagger docs
+    ├── rest/              # JAX-RS resources + DTOs + JSON exception mappers
+    ├── persistence/        # Hibernate ORM with Panache entities/repositories
+    └── messaging/          # Outbox event publisher + RabbitMQ publisher + the outbox relay job
+src/main/resources/
+├── application.properties
+└── db/migration/          # Flyway migrations (schema is "catalog" / "stock")
 ```
 
 Key patterns:
-- Repository interfaces defined in `domain/`, implemented in `infra/postgres/`
-- Domain events (e.g., `ProductCreated`) published via `EventPublisher` wrapping RabbitMQ
-- Swagger docs are generated into `cmd/api/docs/` via `swag init`
-
-### Shared Go Library (`libs/go-common`)
-
-Packages used across services:
-- `db/` — PostgreSQL connection via GORM
-- `auth/` — Auth middleware
-- `event/` — `Publisher` and `Subscriber` interfaces
-- `rabbitmq/` — RabbitMQ client implementations
-- `logger/` — Structured logging
-- `publicid/` — ID generation utilities
-- `audit/` — Audit trail support
+- Repository interfaces are defined in `domain/`, implemented in `infra/persistence/`.
+- Each business operation is its own `@ApplicationScoped` use case class (e.g. `application/usecase/product/UpdateProductUseCase`) injected directly by REST resources and messaging handlers; use cases may compose other use cases (e.g. `UpdateProductUseCase` calls `GetProductByIdUseCase`) instead of duplicating repository lookups.
+- Domain aggregates use Lombok (`@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor`) instead of hand-written boilerplate; a constructor stays hand-written wherever it isn't a pure all-fields assignment (e.g. it calls `super(...)` or computes a field).
+- Public IDs are prefixed and validated (`cat_*`, `prod_*`, `stock_*`, ...) — see each service's `domain/shared`/`domain/<entity>` id records (`CategoryId`, `ProductId`, `StockId`, `ReassignmentId`).
+- Domain events (e.g. `category.created`, `product.updated`) are written to an `outbox_entries` table in the **same transaction** as the aggregate write (`@Transactional` service methods), guaranteeing atomicity. A `@Scheduled` job in `infra/messaging` (the "relay") polls that table and publishes pending entries to RabbitMQ asynchronously — this replaces the Go version's separate `relay` binary with an in-process job, a deliberate simplification.
+- Standardized error responses are produced by JAX-RS `ExceptionMapper`s in `infra/rest/exception`: business errors (400/404/409) return `{"message": "..."}`; bean-validation failures return `{"mensagem": "...", "erros": {...}}`.
 
 ### Event Flow
 
-Services publish domain events to RabbitMQ after state mutations. Other services subscribe to relevant events. The event publisher is wired at `cmd/api/main.go` startup using the RabbitMQ connection from `libs/go-common/rabbitmq`.
+Services publish domain events to the RabbitMQ topic exchange `catalog.events` / `stock.events` after state mutations, via the transactional outbox described above. Other services subscribe to relevant events (e.g. `stock-service` reacts to `product.updated`/`product.deleted`).
 
 ### Frontend
 
@@ -112,22 +113,19 @@ Modern.js 3 (React 19, TypeScript). SSR enabled. Linting via Biome (2-space inde
 
 ## Environment Configuration
 
-Each Go service reads from `.env.dev` (dev) or `.env.prod` (prod). Key variables:
+Each Java service reads Postgres/RabbitMQ settings from environment variables (with local-dev defaults in `application.properties`):
 
 ```
 RABBITMQ_HOST / RABBITMQ_PORT / RABBITMQ_USER / RABBITMQ_PASSWORD
-POSTGRES_HOST / POSTGRES_DATABASE / POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_PORT
+POSTGRES_HOST / POSTGRES_PORT / POSTGRES_DATABASE / POSTGRES_USER / POSTGRES_PASSWORD
 ```
 
 Default dev credentials are in `dev.docker-compose.yaml`.
 
-## Go Workspace
-
-`go.work` ties together `apps/catalog-service`, `apps/stock-service`, and `libs/go-common`. When adding a new Go service, register it in `go.work`. Changes to `libs/go-common` affect all services — verify compatibility in both.
-
 ## Tooling Notes
 
-- **Air** (`.air.toml` per service) — Go hot reload; outputs to `./bin/main.exe`
-- **swag** — Swagger generation; run `make docs` after changing handler annotations
-- **Biome** — Frontend lint/format; run `biome check` in `apps/frontend`
-- **Turbo** — Caches build outputs in `.next/**` and `dist/**`; `dev` task is non-cached and persistent
+- **Maven / Quarkus** — `mvn quarkus:dev` for hot reload, `mvn package` to build `target/quarkus-app/quarkus-run.jar`. Requires a Java 21 JDK on `JAVA_HOME`/`PATH`.
+- **Flyway** — owns the Postgres schema for each service; migrations live in `src/main/resources/db/migration`.
+- **smallrye-openapi / swagger-ui** — OpenAPI docs served at `/docs` on each service (equivalent to the old `swag`-generated docs).
+- **Biome** — Frontend lint/format; run `biome check` in `frontend`.
+- **Turbo** — Caches build outputs in `.next/**` and `dist/**`; `dev` task is non-cached and persistent.

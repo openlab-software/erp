@@ -2,3 +2,11 @@ node_modules
 .turbo
 bin
 .output
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

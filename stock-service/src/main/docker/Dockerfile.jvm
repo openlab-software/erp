@@ -1,0 +1,30 @@
+####
+# Runs the stock-service Quarkus application in JVM mode.
+#
+# Build (from erp/stock-service):
+#   mvn package
+#   docker build -f src/main/docker/Dockerfile.jvm -t stock-service-jvm .
+#
+# Run:
+#   docker run -i --rm -p 8081:8081 \
+#     -e POSTGRES_HOST=... -e POSTGRES_PORT=... -e POSTGRES_USER=... \
+#     -e POSTGRES_PASSWORD=... -e POSTGRES_DATABASE=... \
+#     -e RABBITMQ_HOST=... -e RABBITMQ_PORT=... -e RABBITMQ_USER=... -e RABBITMQ_PASSWORD=... \
+#     stock-service-jvm
+###
+FROM registry.access.redhat.com/ubi9/openjdk-21:1.20
+
+ENV LANGUAGE='en_US:en'
+
+COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
+COPY --chown=185 target/quarkus-app/*.jar /deployments/
+COPY --chown=185 target/quarkus-app/app/ /deployments/app/
+COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+
+EXPOSE 8081
+USER 185
+
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+
+ENTRYPOINT ["/opt/jboss/container/java/run/run-java.sh"]
