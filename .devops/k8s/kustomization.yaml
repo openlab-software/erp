@@ -9,7 +9,7 @@ resources:
 - infra.yaml
 - catalog-service
 - stock-service
-- frontend.yaml
+- frontend
 
 images:
 - name: ghcr.io/openlab-software/frontend
