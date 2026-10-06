@@ -10,6 +10,7 @@ IMAGES       := $(SERVICES) frontend
 K8S_DIR      := .devops/k8s
 DOCKER_DIR   := .devops/docker
 
+
 # Always target the kind cluster, whatever the current kubectl context is.
 KUBECTL := kubectl --context kind-$(CLUSTER) -n $(NAMESPACE)
 
