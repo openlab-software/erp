@@ -1,15 +1,19 @@
 {
   "extends": "@modern-js/tsconfig/base",
   "compilerOptions": {
+    "module": "ESNext",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
     "moduleResolution": "bundler",
     "declaration": false,
     "jsx": "preserve",
     "baseUrl": "./",
     "paths": {
       "@/*": ["./src/*"],
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@api/*": ["./api/lambda/*"]
     }
   },
-  "include": ["src", "shared", "config", "modern.config.ts"],
+  "include": ["src", "shared", "config", "api", "modern.config.ts"],
   "exclude": ["**/node_modules"]
 }

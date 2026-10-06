@@ -8,6 +8,7 @@ const NAV = [
     items: [
       { path: "/", label: "Dashboard", icon: "dashboard" },
       { path: "/produtos", label: "Produtos", icon: "box", badge: "14" },
+      { path: "/marcas", label: "Marcas", icon: "stack" },
       { path: "/estoque", label: "Estoque", icon: "warehouse", badge: "3" },
     ],
   },

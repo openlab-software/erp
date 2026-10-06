@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "@modern-js/runtime/router";
 import { OpenLabUIProvider } from "@openlab-ui/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import styled from "@xstyled/emotion";
 import { Sidebar } from "../components/shell/sidebar";
 import { Topbar } from "../components/shell/topbar";
@@ -10,20 +11,31 @@ import "@openlab-ui/react/styles.css";
 
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
+  // One client per app instance (kept in state so it survives re-renders).
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false },
+        },
+      }),
+  );
   return (
-    <OpenLabUIProvider>
-      <ToastProvider>
-        <App data-side={collapsed ? "collapsed" : "open"}>
-          <Sidebar collapsed={collapsed} />
-          <Main>
-            <Topbar onToggleSide={() => setCollapsed((c) => !c)} />
-            <Content>
-              <Outlet />
-            </Content>
-          </Main>
-        </App>
-      </ToastProvider>
-    </OpenLabUIProvider>
+    <QueryClientProvider client={queryClient}>
+      <OpenLabUIProvider>
+        <ToastProvider>
+          <App data-side={collapsed ? "collapsed" : "open"}>
+            <Sidebar collapsed={collapsed} />
+            <Main>
+              <Topbar onToggleSide={() => setCollapsed((c) => !c)} />
+              <Content>
+                <Outlet />
+              </Content>
+            </Main>
+          </App>
+        </ToastProvider>
+      </OpenLabUIProvider>
+    </QueryClientProvider>
   );
 }
 
