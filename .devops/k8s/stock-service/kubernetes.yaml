@@ -4,9 +4,9 @@ kind: ServiceAccount
 metadata:
   annotations:
     app.quarkus.io/quarkus-version: 3.38.3
-    app.quarkus.io/commit-id: 8d9d5dec553719bf82413eaaff9f4a490ecafb95
+    app.quarkus.io/commit-id: 748dc567c3cd7fa452003fad71bac937915fbc4c
     app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-    app.quarkus.io/build-timestamp: 2026-10-06 - 13:47:58 +0000
+    app.quarkus.io/build-timestamp: 2026-10-06 - 17:10:17 +0000
   labels:
     app.kubernetes.io/name: stock-service
     app.kubernetes.io/part-of: erp
@@ -94,9 +94,9 @@ kind: Service
 metadata:
   annotations:
     app.quarkus.io/quarkus-version: 3.38.3
-    app.quarkus.io/commit-id: 8d9d5dec553719bf82413eaaff9f4a490ecafb95
+    app.quarkus.io/commit-id: 748dc567c3cd7fa452003fad71bac937915fbc4c
     app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-    app.quarkus.io/build-timestamp: 2026-10-06 - 13:47:58 +0000
+    app.quarkus.io/build-timestamp: 2026-10-06 - 17:10:17 +0000
   labels:
     app.kubernetes.io/name: stock-service
     app.kubernetes.io/part-of: erp
@@ -121,9 +121,9 @@ kind: Deployment
 metadata:
   annotations:
     app.quarkus.io/quarkus-version: 3.38.3
-    app.quarkus.io/commit-id: 8d9d5dec553719bf82413eaaff9f4a490ecafb95
+    app.quarkus.io/commit-id: 748dc567c3cd7fa452003fad71bac937915fbc4c
     app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-    app.quarkus.io/build-timestamp: 2026-10-06 - 13:47:58 +0000
+    app.quarkus.io/build-timestamp: 2026-10-06 - 17:10:17 +0000
   labels:
     app.kubernetes.io/name: stock-service
     app.kubernetes.io/part-of: erp
@@ -136,20 +136,20 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/version: 1.0.0-SNAPSHOT
-      app.kubernetes.io/part-of: erp
       app.kubernetes.io/name: stock-service
+      app.kubernetes.io/part-of: erp
   template:
     metadata:
       annotations:
         app.quarkus.io/quarkus-version: 3.38.3
-        app.quarkus.io/commit-id: 8d9d5dec553719bf82413eaaff9f4a490ecafb95
+        app.quarkus.io/commit-id: 748dc567c3cd7fa452003fad71bac937915fbc4c
         app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-        app.quarkus.io/build-timestamp: 2026-10-06 - 13:47:58 +0000
+        app.quarkus.io/build-timestamp: 2026-10-06 - 17:10:17 +0000
       labels:
         app.kubernetes.io/managed-by: quarkus
         app.kubernetes.io/version: 1.0.0-SNAPSHOT
-        app.kubernetes.io/part-of: erp
         app.kubernetes.io/name: stock-service
+        app.kubernetes.io/part-of: erp
     spec:
       containers:
         - env:
@@ -159,25 +159,25 @@ spec:
                   fieldPath: metadata.namespace
             - name: QUARKUS_FLYWAY_ACTIVE
               value: "false"
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: POSTGRES_PORT
+              value: "5432"
             - name: POSTGRES_HOST
               value: postgres
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: postgres-password
-                  name: erp-secrets
             - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
                   key: rabbitmq-password
                   name: erp-secrets
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: postgres-password
+                  name: erp-secrets
             - name: RABBITMQ_HOST
               value: rabbitmq
-            - name: POSTGRES_PORT
-              value: "5432"
-            - name: RABBITMQ_PORT
-              value: "5672"
-          image: ghcr.io/openlab-software/stock-service:8d9d5dec553719bf82413eaaff9f4a490ecafb95
+          image: ghcr.io/openlab-software/stock-service:748dc567c3cd7fa452003fad71bac937915fbc4c
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -238,29 +238,29 @@ spec:
     spec:
       containers:
         - env:
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: POSTGRES_PORT
+              value: "5432"
             - name: POSTGRES_HOST
               value: postgres
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: postgres-password
-                  name: erp-secrets
             - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
                   key: rabbitmq-password
                   name: erp-secrets
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: postgres-password
+                  name: erp-secrets
             - name: RABBITMQ_HOST
               value: rabbitmq
-            - name: POSTGRES_PORT
-              value: "5432"
-            - name: RABBITMQ_PORT
-              value: "5672"
             - name: QUARKUS_INIT_AND_EXIT
               value: "true"
             - name: QUARKUS_FLYWAY_ACTIVE
               value: "true"
-          image: ghcr.io/openlab-software/stock-service:8d9d5dec553719bf82413eaaff9f4a490ecafb95
+          image: ghcr.io/openlab-software/stock-service:748dc567c3cd7fa452003fad71bac937915fbc4c
           name: stock-service-flyway-init
       restartPolicy: OnFailure
       serviceAccountName: stock-service

@@ -14,4 +14,4 @@ resources:
 images:
 - name: ghcr.io/openlab-software/frontend
   newName: ghcr.io/openlab-software/frontend
-  newTag: 8d9d5dec553719bf82413eaaff9f4a490ecafb95
+  newTag: 748dc567c3cd7fa452003fad71bac937915fbc4c
