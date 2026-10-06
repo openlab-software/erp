@@ -6,11 +6,12 @@ kind: Kustomization
 # kubernetes extension (committed by the CI); only the frontend tag lives here
 # (kustomize edit set image).
 resources:
-  - infra.yaml
-  - catalog-service
-  - stock-service
-  - frontend.yaml
+- infra.yaml
+- catalog-service
+- stock-service
+- frontend.yaml
 
 images:
-  - name: ghcr.io/openlab-software/frontend
-    newTag: 1.0.0-SNAPSHOT
+- name: ghcr.io/openlab-software/frontend
+  newName: ghcr.io/openlab-software/frontend
+  newTag: 8d9d5dec553719bf82413eaaff9f4a490ecafb95
