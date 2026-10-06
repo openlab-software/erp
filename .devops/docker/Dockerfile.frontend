@@ -1,16 +1,22 @@
-FROM node:22.17.0-alpine
-
+# Build from the repository root:
+#   docker build -f .devops/docker/Dockerfile.frontend -t docker.io/openlab/frontend:1.0.0-SNAPSHOT .
+FROM node:22-alpine AS build
 WORKDIR /app
 
-COPY apps/frontend/.next/standalone ./
-RUN mv -n /app/apps/frontend/* /app/apps/frontend/.* /app
+# package-lock.json is optional; use it (npm ci) when present, otherwise resolve fresh.
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-COPY apps/frontend/.next/static ./.next/static/
+COPY frontend/ ./
+# `modern deploy` builds the app and emits a self-contained Node server in .output
+# (its own trimmed node_modules), so the runtime image needs nothing else.
+RUN npx modern deploy
 
-RUN chown 1001:1001 /app  -R
-USER 1001
-
+FROM node:22-alpine
+WORKDIR /app
+ENV NODE_ENV=production \
+    PORT=3000
+COPY --from=build --chown=node:node /app/.output ./
+USER node
 EXPOSE 3000
-ENV PORT 3000
-
-ENTRYPOINT ["node", "/app/server.js"]
+CMD ["node", "index.js"]

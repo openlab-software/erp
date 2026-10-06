@@ -1,0 +1,173 @@
+quarkus:
+  application:
+    name: stock-service
+  http:
+    port: 8081
+
+  # --- Postgres ---
+  # Same "erp" database used by catalog-service, own "stock" schema. Defaults below
+  # mirror apps/stock-service/.env.dev for local dev; override via real env vars in
+  # other environments.
+  datasource:
+    db-kind: postgresql
+    username: ${POSTGRES_USER:root}
+    password: "${POSTGRES_PASSWORD:Postgres123!}"
+    jdbc:
+      url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DATABASE:erp}
+  hibernate-orm:
+    # Schema is fully managed by Flyway; Hibernate ORM must not attempt DDL (it would also
+    # try to validate catalog.products, which this service only reads and never migrates).
+    schema-management:
+      strategy: none
+  flyway:
+    baseline-on-migrate: true
+    migrate-at-start: true
+    schemas: stock
+    default-schema: stock
+    create-schemas: true
+
+  # --- Jackson ---
+  # JSON field names follow snake_case (stock_id, page_size, from_stock_id, ...) while
+  # Java fields stay camelCase, matching the wire format already used by the Go services.
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+  # --- OpenAPI / Swagger UI ---
+  smallrye-openapi:
+    info-title: Stock Service API
+    info-version: "1.0"
+    info-description: Servico responsavel por gerenciar estoques dentro do ERP.
+  swagger-ui:
+    always-include: true
+    path: /docs
+
+  # --- Stork (service discovery / client-side load balancing) ---
+  # Resolves other services by their Kubernetes Service name (e.g. stork://catalog-service).
+  stork:
+    catalog-service:
+      service-discovery:
+        type: kubernetes
+        k8s-namespace: ${K8S_NAMESPACE:erp}
+      load-balancer:
+        type: round-robin
+
+  # --- REST client -> catalog-service (resolved through Stork) ---
+  # catalog-service serves everything under the /catalog-service root path.
+  rest-client:
+    catalog:
+      url: stork://catalog-service/catalog-service
+
+  # --- Kubernetes (manifests generated at build into target/kubernetes) ---
+  container-image:
+    group: openlab
+    name: stock-service
+  kubernetes:
+    name: stock-service
+    namespace: ${K8S_NAMESPACE:erp}
+    part-of: erp
+    replicas: 2
+    image-pull-policy: IfNotPresent
+    service-type: ClusterIP
+    service-account: stock-service
+    ports:
+      http:
+        container-port: 8081
+    env:
+      vars:
+        POSTGRES_HOST: postgres
+        POSTGRES_PORT: "5432"
+        RABBITMQ_HOST: rabbitmq
+        # Fixed on purpose: Kubernetes injects POSTGRES_PORT=tcp://ip:port (service links),
+        # which would otherwise override the numeric port.
+        RABBITMQ_PORT: "5672"
+      mapping:
+        POSTGRES_PASSWORD:
+          from-secret: erp-secrets
+          with-key: postgres-password
+        RABBITMQ_PASSWORD:
+          from-secret: erp-secrets
+          with-key: rabbitmq-password
+    liveness-probe:
+      http-action-path: /q/health/live
+    readiness-probe:
+      http-action-path: /q/health/ready
+    # Stork's Kubernetes discovery reads Services/Endpoints.
+    rbac:
+      service-accounts:
+        stock-service:
+          namespace: ${K8S_NAMESPACE:erp}
+      roles:
+        stock-service-stork-discovery:
+          policy-rules:
+            "0":
+              api-groups: ""
+              resources: endpoints,services
+              verbs: get,list,watch
+      role-bindings:
+        stock-service-stork-discovery:
+          role-name: stock-service-stork-discovery
+          subjects:
+            stock-service:
+              kind: ServiceAccount
+              namespace: ${K8S_NAMESPACE:erp}
+
+# --- RabbitMQ (quarkus-messaging-rabbitmq) ---
+# Publisher: infra.messaging.StockEventPublisher; consumer: infra.messaging.CatalogEventsConsumer.
+rabbitmq-host: ${RABBITMQ_HOST:localhost}
+rabbitmq-port: ${RABBITMQ_PORT:5672}
+rabbitmq-username: ${RABBITMQ_USER:root}
+rabbitmq-password: "${RABBITMQ_PASSWORD:RabbitMQ123!}"
+
+mp:
+  messaging:
+    outgoing:
+      # Publishes with a per-message routing key to the durable topic exchange.
+      stock-events:
+        connector: smallrye-rabbitmq
+        exchange:
+          name: stock.events
+          type: topic
+          durable: true
+    incoming:
+      # Durable "stock-subscriber" queue bound to catalog.events. A nack is rejected
+      # without requeue (same behaviour as the previous hand-rolled consumer).
+      catalog-events:
+        connector: smallrye-rabbitmq
+        exchange:
+          name: catalog.events
+          type: topic
+          durable: true
+        queue:
+          name: stock-subscriber
+          durable: true
+        routing-keys: product.created,product.updated,product.deleted
+        max-outstanding-messages: 10
+        failure-strategy: reject
+
+stock:
+  outbox:
+    relay:
+      interval: 5s
+
+app:
+  i18n:
+    # Fallback when Accept-Language is absent/unsupported. Bundles: i18n/messages_{pt_BR,en}.properties
+    default-locale: pt-BR
+
+"%dev":
+  quarkus:
+    stork:
+      catalog-service:
+        service-discovery:
+          type: static
+          address-list: localhost:8080
+
+"%test":
+  quarkus:
+    flyway:
+      migrate-at-start: false
+    stork:
+      catalog-service:
+        service-discovery:
+          type: static
+          address-list: localhost:8080

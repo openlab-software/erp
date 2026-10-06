@@ -6,7 +6,6 @@ import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import org.jboss.logging.Logger;
@@ -24,7 +23,7 @@ public class OutboxRelay {
     private static final int BATCH_SIZE = 100;
 
     @Inject
-    RabbitMqGateway rabbitMqGateway;
+    StockEventPublisher publisher;
 
     @Scheduled(every = "{stock.outbox.relay.interval}")
     @Transactional
@@ -41,7 +40,7 @@ public class OutboxRelay {
 
     private void publishEntry(OutboxEntryEntity entry) {
         try {
-            rabbitMqGateway.publish(entry.routingKey, entry.payload.getBytes(StandardCharsets.UTF_8));
+            publisher.publish(entry.routingKey, entry.payload);
             entry.status = OutboxEntryEntity.PUBLISHED;
             entry.publishedAt = Instant.now();
         } catch (Exception e) {

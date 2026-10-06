@@ -1,4 +1,4 @@
-package software.openlab.catalog.infra.messaging;
+package software.openlab.stock.infra.messaging;
 
 import io.smallrye.reactive.messaging.MutinyEmitter;
 import io.smallrye.reactive.messaging.rabbitmq.OutgoingRabbitMQMetadata;
@@ -10,19 +10,17 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
 
 /**
- * Publishes to the durable topic exchange "catalog.events" through the
- * {@code catalog-events} outgoing channel of quarkus-messaging-rabbitmq (exchange
- * declaration and connection settings live in application.properties). The call blocks
- * until the broker has acknowledged the message, so {@link OutboxRelayJob} only marks an
- * entry as published once it was actually sent.
+ * Publishes to the durable topic exchange "stock.events" through the {@code stock-events}
+ * outgoing channel of quarkus-messaging-rabbitmq. Blocks until the broker acknowledges the
+ * message so {@link OutboxRelay} only marks an entry as published once it was sent.
  */
 @ApplicationScoped
-public class RabbitMqPublisher {
+public class StockEventPublisher {
 
     private static final Duration PUBLISH_TIMEOUT = Duration.ofSeconds(10);
 
     @Inject
-    @Channel("catalog-events")
+    @Channel("stock-events")
     MutinyEmitter<String> emitter;
 
     public void publish(String routingKey, String jsonBody) {

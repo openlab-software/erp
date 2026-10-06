@@ -111,6 +111,12 @@ Services publish domain events to the RabbitMQ topic exchange `catalog.events` /
 
 Modern.js 3 (React 19, TypeScript). SSR enabled. Linting via Biome (2-space indent, single quotes, 80-char line width). Uses `@cms/ts-common` for shared types.
 
+**BFF** — `frontend/api/` (Modern.js requires this exact folder name). Each file under `api/lambda/` is a route under `/api` (`catalog/brands/index.ts` → `/api/catalog/brands`; `[id].ts` → `:id`; export `get`/`post`/`put`/`del`). `api/lib/upstream.ts` calls the backends server-side, using `CATALOG_SERVICE_URL` / `STOCK_SERVICE_URL` (cluster DNS in `.devops/k8s/frontend.yaml`, localhost by default). The project is ESM (`"type": "module"`), so relative imports inside `api/` must use the `.ts` extension (`from '../../../lib/upstream.ts'`): `modern dev` loads the TypeScript directly and cannot resolve `.js` → `.ts`, while `rewriteRelativeImportExtensions` (tsconfig) turns it into `.js` in the build output. The browser only talks to `/api/...`, never to the services. The BFF passes the services' JSON through untouched, and the frontend types mirror it exactly: catalog-service serializes in **snake_case** (`brand_id`, `created_at`, `page_size`), so TypeScript types use those names and there is no mapping layer. Nullable fields (e.g. `updated_at`) are typed `string | null`.
+
+**Yarn** — `@modern-js/render` declares `react-server-dom-rspack` as a peer dependency; npm installs peers automatically but Yarn does not, so it is listed explicitly in `frontend/package.json` (without it `yarn dev` fails with `ESModulesLinkingError ... react-server-dom-rspack/client.browser`).
+
+**Features** — `frontend/src/features/<feature>/` holds everything for one domain (see `features/brands`): `api.ts` (calls to the BFF), `queries.ts` (TanStack Query hooks), `schemas.ts` (zod), `types.ts`, `components/`, and an `index.ts` that is the feature's public API. `src/routes/*/page.tsx` stay thin and import only from a feature's `index.ts`. Shared code lives in `src/lib` (HTTP client, utilities) and `src/components` (UI primitives). Forms use react-hook-form + zod; server data uses TanStack Query. Dialogs must stay mounted and be driven by `open`, not unmounted while open.
+
 ## Environment Configuration
 
 Each Java service reads Postgres/RabbitMQ settings from environment variables (with local-dev defaults in `application.properties`):

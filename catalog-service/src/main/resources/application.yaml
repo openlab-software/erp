@@ -1,0 +1,150 @@
+quarkus:
+  application:
+    name: catalog-service
+  http:
+    port: 8080
+    root-path: /catalog-service
+
+  # --- Postgres / Hibernate ---
+  datasource:
+    db-kind: postgresql
+    username: ${POSTGRES_USER:root}
+    password: "${POSTGRES_PASSWORD:Postgres123!}"
+    jdbc:
+      url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DATABASE:erp}
+  hibernate-orm:
+    database:
+      default-schema: catalog
+      # Schema is owned by Flyway migrations, not Hibernate.
+      generation: none
+
+  # --- Flyway ---
+  flyway:
+    baseline-on-migrate: true
+    migrate-at-start: true
+    schemas: catalog
+    default-schema: catalog
+    create-schemas: true
+
+  # --- OpenAPI / Swagger UI (equivalent to the Go service's swag-generated docs) ---
+  smallrye-openapi:
+    path: /docs/openapi
+  swagger-ui:
+    path: /docs
+    always-include: true
+
+  # --- Stork (service discovery / client-side load balancing) ---
+  # Resolves other services by their Kubernetes Service name (e.g. stork://stock-service).
+  stork:
+    stock-service:
+      service-discovery:
+        type: kubernetes
+        k8s-namespace: ${K8S_NAMESPACE:erp}
+      load-balancer:
+        type: round-robin
+
+  # --- Kubernetes (manifests generated at build into target/kubernetes) ---
+  container-image:
+    group: openlab
+    name: catalog-service
+  kubernetes:
+    name: catalog-service
+    namespace: ${K8S_NAMESPACE:erp}
+    part-of: erp
+    replicas: 2
+    image-pull-policy: IfNotPresent
+    service-type: ClusterIP
+    service-account: catalog-service
+    ports:
+      http:
+        container-port: 8080
+    env:
+      vars:
+        POSTGRES_HOST: postgres
+        POSTGRES_PORT: "5432"
+        RABBITMQ_HOST: rabbitmq
+        # Fixed on purpose: Kubernetes injects POSTGRES_PORT=tcp://ip:port (service links),
+        # which would otherwise override the numeric port.
+        RABBITMQ_PORT: "5672"
+      mapping:
+        POSTGRES_PASSWORD:
+          from-secret: erp-secrets
+          with-key: postgres-password
+        RABBITMQ_PASSWORD:
+          from-secret: erp-secrets
+          with-key: rabbitmq-password
+    liveness-probe:
+      http-action-path: /catalog-service/q/health/live
+    readiness-probe:
+      http-action-path: /catalog-service/q/health/ready
+    # Stork's Kubernetes discovery reads Services/Endpoints.
+    rbac:
+      service-accounts:
+        catalog-service:
+          namespace: ${K8S_NAMESPACE:erp}
+      roles:
+        catalog-service-stork-discovery:
+          policy-rules:
+            "0":
+              api-groups: ""
+              resources: endpoints,services
+              verbs: get,list,watch
+      role-bindings:
+        catalog-service-stork-discovery:
+          role-name: catalog-service-stork-discovery
+          subjects:
+            catalog-service:
+              kind: ServiceAccount
+              namespace: ${K8S_NAMESPACE:erp}
+
+# --- RabbitMQ (quarkus-messaging-rabbitmq, see infra.messaging.RabbitMqPublisher) ---
+rabbitmq-host: ${RABBITMQ_HOST:localhost}
+rabbitmq-port: ${RABBITMQ_PORT:5672}
+rabbitmq-username: ${RABBITMQ_USER:root}
+rabbitmq-password: "${RABBITMQ_PASSWORD:RabbitMQ123!}"
+
+mp:
+  messaging:
+    outgoing:
+      # Publishes with a per-message routing key to the durable topic exchange.
+      catalog-events:
+        connector: smallrye-rabbitmq
+        exchange:
+          name: catalog.events
+          type: topic
+          durable: true
+  openapi:
+    extensions:
+      smallrye:
+        info:
+          title: Catalog Service API
+          version: "1.0"
+          description: Servico responsavel por gerenciar o catalogo de produtos dentro do ERP.
+
+catalog:
+  outbox:
+    # In-process @Scheduled job, see infra.messaging.OutboxRelayJob.
+    relay-interval: 5s
+
+app:
+  i18n:
+    # Fallback when Accept-Language is absent/unsupported. Bundles: i18n/messages_{pt_BR,en}.properties
+    default-locale: pt-BR
+
+"%dev":
+  quarkus:
+    log:
+      level: INFO
+    stork:
+      stock-service:
+        service-discovery:
+          type: static
+          address-list: localhost:8081
+
+"%test":
+  quarkus:
+    stork:
+      stock-service:
+        service-discovery:
+          type: static
+          address-list: localhost:8081

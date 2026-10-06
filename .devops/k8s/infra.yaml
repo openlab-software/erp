@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: postgres, namespace: erp }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: postgres } }
+  template:
+    metadata: { labels: { app: postgres } }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports: [{ containerPort: 5432 }]
+          env:
+            - { name: POSTGRES_USER, value: root }
+            - { name: POSTGRES_DB, value: erp }
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                { secretKeyRef: { name: erp-secrets, key: postgres-password } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: postgres, namespace: erp }
+spec:
+  selector: { app: postgres }
+  ports: [{ port: 5432 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: rabbitmq, namespace: erp }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: rabbitmq } }
+  template:
+    metadata: { labels: { app: rabbitmq } }
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3-management
+          ports: [{ containerPort: 5672 }, { containerPort: 15672 }]
+          env:
+            - { name: RABBITMQ_DEFAULT_USER, value: root }
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                { secretKeyRef: { name: erp-secrets, key: rabbitmq-password } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: rabbitmq, namespace: erp }
+spec:
+  selector: { app: rabbitmq }
+  ports:
+    - { name: amqp, port: 5672 }
+    - { name: management, port: 15672 }

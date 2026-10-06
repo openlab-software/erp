@@ -1,0 +1,267 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    app.quarkus.io/quarkus-version: 3.38.3
+    app.quarkus.io/commit-id: c1a606f1d7d5c084090a77fa62c2721613877433
+    app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
+    app.quarkus.io/build-timestamp: 2026-10-05 - 19:59:54 +0000
+  labels:
+    app.kubernetes.io/name: stock-service
+    app.kubernetes.io/part-of: erp
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.kubernetes.io/managed-by: quarkus
+  name: stock-service
+  namespace: erp
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: stock-service
+    app.kubernetes.io/part-of: erp
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  name: stock-service-stork-discovery
+  namespace: erp
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: stock-service
+    app.kubernetes.io/part-of: erp
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  name: view-jobs
+  namespace: erp
+rules:
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: stock-service
+    app.kubernetes.io/part-of: erp
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  name: stock-service-view-jobs
+  namespace: erp
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: view-jobs
+subjects:
+  - kind: ServiceAccount
+    apiGroup: ""
+    name: stock-service
+    namespace: erp
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: stock-service
+    app.kubernetes.io/part-of: erp
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  name: stock-service-stork-discovery
+  namespace: erp
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: stock-service-stork-discovery
+subjects:
+  - kind: ServiceAccount
+    name: stock-service
+    namespace: erp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    app.quarkus.io/quarkus-version: 3.38.3
+    app.quarkus.io/commit-id: c1a606f1d7d5c084090a77fa62c2721613877433
+    app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
+    app.quarkus.io/build-timestamp: 2026-10-05 - 19:59:54 +0000
+  labels:
+    app.kubernetes.io/name: stock-service
+    app.kubernetes.io/part-of: erp
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.kubernetes.io/managed-by: quarkus
+  name: stock-service
+  namespace: erp
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    app.kubernetes.io/name: stock-service
+    app.kubernetes.io/part-of: erp
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.quarkus.io/quarkus-version: 3.38.3
+    app.quarkus.io/commit-id: c1a606f1d7d5c084090a77fa62c2721613877433
+    app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
+    app.quarkus.io/build-timestamp: 2026-10-05 - 19:59:54 +0000
+  labels:
+    app.kubernetes.io/name: stock-service
+    app.kubernetes.io/part-of: erp
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.kubernetes.io/managed-by: quarkus
+  name: stock-service
+  namespace: erp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/version: 1.0.0-SNAPSHOT
+      app.kubernetes.io/part-of: erp
+      app.kubernetes.io/name: stock-service
+  template:
+    metadata:
+      annotations:
+        app.quarkus.io/quarkus-version: 3.38.3
+        app.quarkus.io/commit-id: c1a606f1d7d5c084090a77fa62c2721613877433
+        app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
+        app.quarkus.io/build-timestamp: 2026-10-05 - 19:59:54 +0000
+      labels:
+        app.kubernetes.io/managed-by: quarkus
+        app.kubernetes.io/version: 1.0.0-SNAPSHOT
+        app.kubernetes.io/part-of: erp
+        app.kubernetes.io/name: stock-service
+    spec:
+      containers:
+        - env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: QUARKUS_FLYWAY_ACTIVE
+              value: "false"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: postgres-password
+                  name: erp-secrets
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-password
+                  name: erp-secrets
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: RABBITMQ_PORT
+              value: "5672"
+          image: docker.io/openlab/stock-service:1.0.0-SNAPSHOT
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/live
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          name: stock-service
+          ports:
+            - containerPort: 8081
+              name: http
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/ready
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          startupProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/started
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+      initContainers:
+        - args:
+            - job
+            - stock-service-flyway-init
+          image: groundnuty/k8s-wait-for:no-root-v1.7
+          imagePullPolicy: Always
+          name: wait-for-flyway
+      serviceAccountName: stock-service
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stock-service-flyway-init
+  namespace: erp
+spec:
+  completionMode: NonIndexed
+  selector: {}
+  suspend: false
+  template:
+    metadata: {}
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: postgres-password
+                  name: erp-secrets
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-password
+                  name: erp-secrets
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: QUARKUS_INIT_AND_EXIT
+              value: "true"
+            - name: QUARKUS_FLYWAY_ACTIVE
+              value: "true"
+          image: docker.io/openlab/stock-service:1.0.0-SNAPSHOT
+          name: stock-service-flyway-init
+      restartPolicy: OnFailure
+      serviceAccountName: stock-service
+      terminationGracePeriodSeconds: 10
