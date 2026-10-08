@@ -24,7 +24,7 @@ spec:
             # Used only by the BFF (server side); the browser never sees these.
             # Cluster DNS: <service>.<namespace>.svc.cluster.local
             - name: CATALOG_SERVICE_URL
-              value: http://catalog-service.erp.svc.cluster.local/catalog-service
+              value: http://catalog-service.erp.svc.cluster.local
             - name: STOCK_SERVICE_URL
               value: http://stock-service.erp.svc.cluster.local
           readinessProbe:

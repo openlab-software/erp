@@ -55,7 +55,7 @@ build:
 # --- kind ---
 kind-up: kind-cluster kind-namespace kind-secret kind-infra kind-images kind-load kind-deploy kind-frontend
 	@echo ""
-	@echo "Done. Try: make kind-forward  ->  http://localhost:3000 (frontend), http://localhost:8080/catalog-service/docs and http://localhost:8081/docs"
+	@echo "Done. Try: make kind-forward  ->  http://localhost:3000 (frontend), http://localhost:8080/docs and http://localhost:8081/docs"
 
 kind-redeploy: kind-images kind-load kind-deploy kind-frontend kind-restart
 

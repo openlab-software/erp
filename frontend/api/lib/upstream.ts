@@ -3,12 +3,13 @@ import { HttpError } from '@modern-js/bff-core';
 /**
  * Base URLs of the backend services, resolved server-side only (never shipped to the
  * browser). In Kubernetes they are the cluster DNS names of the Services, e.g.
- * http://catalog-service.erp.svc.cluster.local/catalog-service — see .devops/k8s/frontend.yaml.
- * The defaults match the local `make catalog` / `make stock` dev servers.
+ * http://catalog-service.erp.svc.cluster.local — see .devops/k8s/frontend/deployment.yaml.
+ * Locally they come from frontend/.env.development (the `make catalog` / `make stock` dev servers).
+ * There are no defaults: both variables must be set.
  */
 const upstreams = {
-  catalog: process.env.CATALOG_SERVICE_URL ?? 'http://localhost:8080/catalog-service',
-  stock: process.env.STOCK_SERVICE_URL ?? 'http://localhost:8081',
+  catalog: process.env.CATALOG_SERVICE_URL,
+  stock: process.env.STOCK_SERVICE_URL,
 } as const;
 
 export type Upstream = keyof typeof upstreams;

@@ -3,7 +3,6 @@ quarkus:
     name: catalog-service
   http:
     port: 8080
-    root-path: /catalog-service
 
   # --- Postgres / Hibernate ---
   datasource:
@@ -74,9 +73,9 @@ quarkus:
           from-secret: erp-secrets
           with-key: rabbitmq-password
     liveness-probe:
-      http-action-path: /catalog-service/q/health/live
+      http-action-path: /q/health/live
     readiness-probe:
-      http-action-path: /catalog-service/q/health/ready
+      http-action-path: /q/health/ready
     # Stork's Kubernetes discovery reads Services/Endpoints.
     rbac:
       service-accounts:

@@ -52,10 +52,9 @@ quarkus:
         type: round-robin
 
   # --- REST client -> catalog-service (resolved through Stork) ---
-  # catalog-service serves everything under the /catalog-service root path.
   rest-client:
     catalog:
-      url: stork://catalog-service/catalog-service
+      url: stork://catalog-service
 
   # --- Kubernetes (manifests generated at build into target/kubernetes) ---
   container-image:
