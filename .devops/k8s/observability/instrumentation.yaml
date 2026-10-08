@@ -1,0 +1,20 @@
+# Auto-instrumentação Node.js do frontend (BFF), injetada pelo OpenTelemetry Operator
+# (componente "opentelemetry" do repositório infrastructure) nos pods com a anotação
+# instrumentation.opentelemetry.io/inject-nodejs: "true" (ver frontend/deployment.yaml).
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: erp-nodejs
+  namespace: erp
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  # O auto-instrumentation do Node usa OTLP/HTTP (porta 4318 do coletor gateway)
+  exporter:
+    endpoint: http://otel-gateway-collector.observability.svc.cluster.local:4318
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    type: parentbased_traceidratio
+    argument: "1"
