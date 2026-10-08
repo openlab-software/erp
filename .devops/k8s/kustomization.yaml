@@ -9,12 +9,10 @@ resources:
 - catalog-service
 - stock-service
 - frontend
-
 images:
 - name: ghcr.io/openlab-software/frontend
   newName: ghcr.io/openlab-software/frontend
-  newTag: v1.0.3
-
+  newTag: v1.0.4
 # Os Jobs *-flyway-init vêm gerados pelo Quarkus (a CI sobrescreve os kubernetes.yaml),
 # então o ajuste fica aqui. Como hook do ArgoCD, o Job é recriado a cada sync (Jobs são
 # imutáveis) e tem prazo: se o pod não sobe (ex.: secret ausente), o Job falha em vez de
