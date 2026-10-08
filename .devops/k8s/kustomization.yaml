@@ -13,3 +13,22 @@ images:
 - name: ghcr.io/openlab-software/frontend
   newName: ghcr.io/openlab-software/frontend
   newTag: v1.0.1
+
+# Os Jobs *-flyway-init vêm gerados pelo Quarkus (a CI sobrescreve os kubernetes.yaml),
+# então o ajuste fica aqui. Como hook do ArgoCD, o Job é recriado a cada sync (Jobs são
+# imutáveis) e tem prazo: se o pod não sobe (ex.: secret ausente), o Job falha em vez de
+# deixar o sync pendurado para sempre.
+patches:
+- target:
+    kind: Job
+    name: ".*-flyway-init"
+  patch: |-
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: placeholder
+      annotations:
+        argocd.argoproj.io/hook: Sync
+        argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    spec:
+      activeDeadlineSeconds: 600

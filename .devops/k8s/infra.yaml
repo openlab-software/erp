@@ -1,6 +1,11 @@
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
-metadata: { name: erp-secrets, namespace: erp }
+metadata:
+  name: erp-secrets
+  namespace: erp
+  annotations:
+    # Primeiro: se os secrets não existem no Bitwarden o sync falha aqui, com a causa visível
+    argocd.argoproj.io/sync-wave: "-2"
 # Cria o Secret "erp-secrets" a partir do Bitwarden Secrets Manager (kind e prod).
 # Requer o ClusterSecretStore "bitwarden" (componente external_secrets do repositório
 # infrastructure) e os secrets abaixo, pelo nome, no projeto Bitwarden configurado na store.
@@ -16,7 +21,10 @@ spec:
 ---
 apiVersion: apps/v1
 kind: Deployment
-metadata: { name: postgres, namespace: erp }
+metadata:
+  name: postgres
+  namespace: erp
+  annotations: { argocd.argoproj.io/sync-wave: "-1" }
 spec:
   replicas: 1
   selector: { matchLabels: { app: postgres } }
@@ -36,14 +44,20 @@ spec:
 ---
 apiVersion: v1
 kind: Service
-metadata: { name: postgres, namespace: erp }
+metadata:
+  name: postgres
+  namespace: erp
+  annotations: { argocd.argoproj.io/sync-wave: "-1" }
 spec:
   selector: { app: postgres }
   ports: [{ port: 5432 }]
 ---
 apiVersion: apps/v1
 kind: Deployment
-metadata: { name: rabbitmq, namespace: erp }
+metadata:
+  name: rabbitmq
+  namespace: erp
+  annotations: { argocd.argoproj.io/sync-wave: "-1" }
 spec:
   replicas: 1
   selector: { matchLabels: { app: rabbitmq } }
@@ -62,7 +76,10 @@ spec:
 ---
 apiVersion: v1
 kind: Service
-metadata: { name: rabbitmq, namespace: erp }
+metadata:
+  name: rabbitmq
+  namespace: erp
+  annotations: { argocd.argoproj.io/sync-wave: "-1" }
 spec:
   selector: { app: rabbitmq }
   ports:
