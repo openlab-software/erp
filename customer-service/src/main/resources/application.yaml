@@ -5,7 +5,7 @@ quarkus:
     port: 8082
 
   # --- Observabilidade (infrastructure: componentes monitoring, loki, tempo, opentelemetry) ---
-  # Métricas: Micrometer em /q/metrics, coletado pelo ServiceMonitor (.devops/k8s/observability).
+  # Métricas: Micrometer em /q/metrics, coletado pelo ServiceMonitor (.devops/helm/templates/observability.yaml).
   # Traces: OpenTelemetry -> coletor OTLP. Fora do cluster fica desligado; o k8s liga abaixo.
   # Logs: stdout (o agente OpenTelemetry coleta), com traceId/spanId para correlação no Grafana.
   otel:

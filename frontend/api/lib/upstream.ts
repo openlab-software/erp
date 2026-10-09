@@ -3,7 +3,7 @@ import { HttpError } from '@modern-js/bff-core';
 /**
  * Base URLs of the backend services, resolved server-side only (never shipped to the
  * browser). In Kubernetes they are the cluster DNS names of the Services, e.g.
- * http://catalog-service.erp.svc.cluster.local — see .devops/k8s/frontend/deployment.yaml.
+ * http://catalog-service.erp.svc.cluster.local — see .devops/helm/templates/frontend.yaml.
  * Locally they come from frontend/.env.development (the `make catalog` / `make stock` dev servers).
  * There are no defaults: all variables must be set.
  */
