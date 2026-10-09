@@ -7,9 +7,20 @@ const NAV = [
     group: "Operação",
     items: [
       { path: "/", label: "Dashboard", icon: "dashboard" },
-      { path: "/produtos", label: "Produtos", icon: "box", badge: "14" },
+      { path: "/produtos", label: "Produtos", icon: "box" },
+      { path: "/estoque", label: "Estoque", icon: "warehouse" },
+    ],
+  },
+  {
+    group: "Cadastros",
+    items: [
+      { path: "/clientes", label: "Clientes", icon: "users" },
+      { path: "/categorias", label: "Categorias", icon: "stack" },
       { path: "/marcas", label: "Marcas", icon: "stack" },
-      { path: "/estoque", label: "Estoque", icon: "warehouse", badge: "3" },
+      { path: "/fornecedores", label: "Fornecedores", icon: "factory" },
+      { path: "/unidades", label: "Unidades de medida", icon: "box" },
+      { path: "/armazens", label: "Armazéns", icon: "warehouse" },
+      { path: "/motivos", label: "Motivos de movimentação", icon: "transfer" },
     ],
   },
   {

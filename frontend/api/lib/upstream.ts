@@ -5,11 +5,12 @@ import { HttpError } from '@modern-js/bff-core';
  * browser). In Kubernetes they are the cluster DNS names of the Services, e.g.
  * http://catalog-service.erp.svc.cluster.local — see .devops/k8s/frontend/deployment.yaml.
  * Locally they come from frontend/.env.development (the `make catalog` / `make stock` dev servers).
- * There are no defaults: both variables must be set.
+ * There are no defaults: all variables must be set.
  */
 const upstreams = {
   catalog: process.env.CATALOG_SERVICE_URL,
   stock: process.env.STOCK_SERVICE_URL,
+  customer: process.env.CUSTOMER_SERVICE_URL,
 } as const;
 
 export type Upstream = keyof typeof upstreams;
@@ -19,13 +20,17 @@ const TIMEOUT_MS = Number(process.env.UPSTREAM_TIMEOUT_MS ?? 10_000);
 interface RequestOptions {
   query?: Record<string, unknown>;
   body?: unknown;
+  /** Sent as multipart/form-data instead of `body` (CSV import). */
+  form?: FormData;
+  /** Read the response as text instead of JSON (CSV export). */
+  text?: boolean;
 }
 
 export async function upstreamRequest<T>(
   service: Upstream,
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
-  { query, body }: RequestOptions = {},
+  { query, body, form, text }: RequestOptions = {},
 ): Promise<T> {
   const url = new URL(`${upstreams[service]}${path}`);
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -40,9 +45,10 @@ export async function upstreamRequest<T>(
       method,
       headers: {
         accept: 'application/json',
+        // multipart: fetch sets the content-type (with boundary) itself.
         ...(body !== undefined && { 'content-type': 'application/json' }),
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: form ?? (body !== undefined ? JSON.stringify(body) : undefined),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (error) {
@@ -61,6 +67,9 @@ export async function upstreamRequest<T>(
   }
   if (response.status === 204) {
     return undefined as T;
+  }
+  if (text) {
+    return (await response.text()) as T;
   }
   return (await response.json()) as T;
 }

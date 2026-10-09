@@ -7,6 +7,13 @@ const CRUMB_LABELS: Record<string, string[]> = {
   "/": ["Operação", "Dashboard"],
   "/produtos": ["Operação", "Produtos"],
   "/estoque": ["Operação", "Estoque"],
+  "/clientes": ["Cadastros", "Clientes"],
+  "/categorias": ["Cadastros", "Categorias"],
+  "/marcas": ["Cadastros", "Marcas"],
+  "/fornecedores": ["Cadastros", "Fornecedores"],
+  "/unidades": ["Cadastros", "Unidades de medida"],
+  "/armazens": ["Cadastros", "Armazéns"],
+  "/motivos": ["Cadastros", "Motivos de movimentação"],
   "/vendas": ["Comercial", "Vendas"],
   "/vendas/novo": ["Comercial", "Novo pedido"],
   "/financeiro": ["Administrativo", "Financeiro"],
@@ -114,6 +121,8 @@ export function Topbar({ onToggleSide }: TopbarProps) {
     if (CRUMB_LABELS[pathname]) return CRUMB_LABELS[pathname];
     if (pathname.startsWith("/produtos/"))
       return ["Operação", "Produtos", "Detalhe"];
+    if (pathname.startsWith("/clientes/"))
+      return ["Cadastros", "Clientes", "Detalhe"];
     return ["—"];
   })();
 

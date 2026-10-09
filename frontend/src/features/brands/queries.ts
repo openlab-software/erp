@@ -45,3 +45,12 @@ export const useUpdateBrand = () =>
   );
 
 export const useDeleteBrand = () => useBrandMutation(deleteBrand);
+
+/** Up to 100 brands (the service's max page size) for selects and filters. */
+export const useBrandOptions = () =>
+  useQuery({
+    queryKey: [...brandKeys.all, "options"],
+    queryFn: () => listBrands({ q: "", page: 1, pageSize: 100 }),
+    placeholderData: keepPreviousData,
+    select: (page) => page.data,
+  });
