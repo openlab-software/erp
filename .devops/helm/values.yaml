@@ -1,0 +1,48 @@
+# Serviços Quarkus: o manifest de cada um é gerado no build (extensão kubernetes do Quarkus)
+# e a CI o coloca em files/<serviço>.yaml antes do `helm package` (não é versionado).
+# A tag da imagem já vem dentro desse manifest.
+services:
+  catalog-service:
+    enabled: true
+  stock-service:
+    enabled: true
+  customer-service:
+    enabled: true
+
+# O Job *-flyway-init é recriado a cada sync (hook do ArgoCD, Jobs são imutáveis) e tem prazo:
+# se o pod não sobe (ex.: secret ausente), o Job falha em vez de deixar o sync pendurado.
+flyway:
+  activeDeadlineSeconds: 600
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/openlab-software/frontend
+    # Vazio = usa .Chart.AppVersion (a tag da release, definida pela CI no package)
+    tag: ""
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    # Mesma classe do ingress-nginx instalado pelo repositório infrastructure
+    className: nginx
+    hosts:
+      # prod (MetalLB + proxy)
+      - erp.patrick.dev.br
+      # kind local (localtest.me resolve para 127.0.0.1)
+      - erp.localtest.me
+      - erp.openlab.software
+
+# Postgres e RabbitMQ dentro do cluster; as senhas vêm do Secret erp-secrets (ExternalSecret)
+infra:
+  enabled: true
+  postgres:
+    image: postgres:15
+  rabbitmq:
+    image: rabbitmq:3-management
+  externalSecret:
+    secretStore: { name: bitwarden, kind: ClusterSecretStore }
+    refreshInterval: 1h
+
+# ServiceMonitor (Prometheus) e Instrumentation (OpenTelemetry Operator)
+observability:
+  enabled: true

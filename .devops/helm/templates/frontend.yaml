@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+      annotations:
+        # OpenTelemetry Operator injeta a auto-instrumentação Node.js (ver observability.yaml)
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            # Used only by the BFF (server side); the browser never sees these.
+            # Cluster DNS: <service>.<namespace>.svc.cluster.local
+            - name: CATALOG_SERVICE_URL
+              value: http://catalog-service.{{ .Release.Namespace }}.svc.cluster.local
+            - name: STOCK_SERVICE_URL
+              value: http://stock-service.{{ .Release.Namespace }}.svc.cluster.local
+            - name: CUSTOMER_SERVICE_URL
+              value: http://customer-service.{{ .Release.Namespace }}.svc.cluster.local
+          readinessProbe:
+            httpGet: { path: /, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+{{- if .Values.frontend.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend
+  namespace: {{ .Release.Namespace }}
+spec:
+  ingressClassName: {{ .Values.frontend.ingress.className }}
+  rules:
+    {{- range .Values.frontend.ingress.hosts }}
+    - host: {{ . }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: frontend, port: { name: http } }
+    {{- end }}
+{{- end }}

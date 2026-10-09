@@ -1,0 +1,39 @@
+{{- /*
+  Manifests gerados pela extensão kubernetes do Quarkus (files/<serviço>.yaml, colocados pela CI).
+  Cada documento é lido, ajustado e reemitido. Substitui os patches que ficavam nos
+  kustomization.yaml de cada serviço:
+    - Role "view-jobs" (igual em todo serviço Quarkus) vira "<serviço>-view-jobs", e o roleRef junto;
+    - o Job *-flyway-init vira hook Sync do ArgoCD, recriado a cada sync, com prazo.
+  O namespace dos recursos passa a ser o da release.
+*/ -}}
+{{- range $name, $svc := .Values.services }}
+{{- if $svc.enabled }}
+{{- $raw := $.Files.Get (printf "files/%s.yaml" $name) | replace "\r\n" "\n" }}
+{{- range $doc := splitList "\n---\n" (printf "\n%s" $raw) }}
+{{- $o := fromYaml $doc }}
+{{- if $o.kind }}
+{{- $_ := set $o.metadata "namespace" $.Release.Namespace }}
+{{- if and (eq $o.kind "Role") (eq $o.metadata.name "view-jobs") }}
+{{- $_ := set $o.metadata "name" (printf "%s-view-jobs" $name) }}
+{{- end }}
+{{- if eq $o.kind "RoleBinding" }}
+{{- if eq $o.roleRef.name "view-jobs" }}
+{{- $_ := set $o.roleRef "name" (printf "%s-view-jobs" $name) }}
+{{- end }}
+{{- range $o.subjects }}
+{{- $_ := set . "namespace" $.Release.Namespace }}
+{{- end }}
+{{- end }}
+{{- if eq $o.kind "Job" }}
+{{- $ann := $o.metadata.annotations | default dict }}
+{{- $_ := set $ann "argocd.argoproj.io/hook" "Sync" }}
+{{- $_ := set $ann "argocd.argoproj.io/hook-delete-policy" "BeforeHookCreation" }}
+{{- $_ := set $o.metadata "annotations" $ann }}
+{{- $_ := set $o.spec "activeDeadlineSeconds" $.Values.flyway.activeDeadlineSeconds }}
+{{- end }}
+---
+{{ toYaml $o }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
