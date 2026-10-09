@@ -5,7 +5,7 @@ CLUSTER      ?= erp
 NAMESPACE    ?= erp
 TAG          ?= 1.0.0-SNAPSHOT
 IMAGE_PREFIX ?= docker.io/openlab
-SERVICES     := catalog-service stock-service
+SERVICES     := catalog-service stock-service customer-service
 IMAGES       := $(SERVICES) frontend
 K8S_DIR      := .devops/k8s
 DOCKER_DIR   := .devops/docker
@@ -18,16 +18,17 @@ KUBECTL := kubectl --context kind-$(CLUSTER) -n $(NAMESPACE)
 POSTGRES_PASSWORD ?= Postgres123!
 RABBITMQ_PASSWORD ?= RabbitMQ123!
 
-.PHONY: help catalog stock build \
+.PHONY: help catalog stock customer build \
 	kind-up kind-down kind-redeploy kind-cluster kind-namespace kind-secret \
 	kind-images kind-load kind-infra kind-deploy kind-frontend kind-restart \
-	kind-status kind-logs-catalog kind-logs-stock kind-logs-frontend kind-forward
+	kind-status kind-logs-catalog kind-logs-stock kind-logs-customer kind-logs-frontend kind-forward
 
 help:
 	@echo "Local dev (Quarkus dev mode):"
 	@echo "  make catalog            mvn quarkus:dev for catalog-service"
 	@echo "  make stock              mvn quarkus:dev for stock-service"
-	@echo "  make build              mvn package for both services"
+	@echo "  make customer           mvn quarkus:dev for customer-service"
+	@echo "  make build              mvn package for all services"
 	@echo ""
 	@echo "kind:"
 	@echo "  make kind-up            create cluster + infra, build/load images and deploy (everything)"
@@ -36,6 +37,7 @@ help:
 	@echo "  make kind-status        pods, jobs, services"
 	@echo "  make kind-logs-catalog  follow catalog-service logs"
 	@echo "  make kind-logs-stock    follow stock-service logs"
+	@echo "  make kind-logs-customer follow customer-service logs"
 	@echo "  make kind-logs-frontend follow frontend logs"
 	@echo "  make kind-forward       port-forward frontend:3000 catalog:8080 stock:8081 rabbitmq-ui:15672"
 	@echo ""
@@ -48,9 +50,13 @@ catalog:
 stock:
 	cd stock-service && mvn quarkus:dev
 
+customer:
+	cd customer-service && mvn quarkus:dev
+
 build:
 	cd catalog-service && mvn package
 	cd stock-service && mvn package
+	cd customer-service && mvn package
 
 # --- kind ---
 kind-up: kind-cluster kind-namespace kind-secret kind-infra kind-images kind-load kind-deploy kind-frontend
@@ -119,6 +125,9 @@ kind-logs-catalog:
 
 kind-logs-stock:
 	$(KUBECTL) logs -f deploy/stock-service
+
+kind-logs-customer:
+	$(KUBECTL) logs -f deploy/customer-service
 
 kind-logs-frontend:
 	$(KUBECTL) logs -f deploy/frontend

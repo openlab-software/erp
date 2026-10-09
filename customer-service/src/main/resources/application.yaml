@@ -1,0 +1,129 @@
+quarkus:
+  application:
+    name: customer-service
+  http:
+    port: 8082
+
+  # --- Observabilidade (infrastructure: componentes monitoring, loki, tempo, opentelemetry) ---
+  # Métricas: Micrometer em /q/metrics, coletado pelo ServiceMonitor (.devops/k8s/observability).
+  # Traces: OpenTelemetry -> coletor OTLP. Fora do cluster fica desligado; o k8s liga abaixo.
+  # Logs: stdout (o agente OpenTelemetry coleta), com traceId/spanId para correlação no Grafana.
+  otel:
+    sdk:
+      disabled: ${OTEL_SDK_DISABLED:true}
+    exporter:
+      otlp:
+        endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}
+  micrometer:
+    export:
+      prometheus:
+        enabled: true
+  log:
+    console:
+      format: "%d{HH:mm:ss.SSS} %-5p traceId=%X{traceId} spanId=%X{spanId} [%c{2.}] (%t) %s%e%n"
+
+  # --- Postgres / Hibernate ---
+  # Same "erp" database used by the other services, own "customer" schema.
+  datasource:
+    db-kind: postgresql
+    username: ${POSTGRES_USER:root}
+    password: "${POSTGRES_PASSWORD:Postgres123!}"
+    jdbc:
+      telemetry: true   # spans das queries JDBC
+      url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DATABASE:erp}
+  hibernate-orm:
+    database:
+      default-schema: customer
+      # Schema is owned by Flyway migrations, not Hibernate.
+      generation: none
+
+  # --- Flyway ---
+  flyway:
+    baseline-on-migrate: true
+    migrate-at-start: true
+    schemas: customer
+    default-schema: customer
+    create-schemas: true
+
+  # --- OpenAPI / Swagger UI ---
+  smallrye-openapi:
+    path: /docs/openapi
+  swagger-ui:
+    path: /docs
+    always-include: true
+
+  # --- Kubernetes (manifests generated at build into target/kubernetes) ---
+  container-image:
+    group: openlab
+    name: customer-service
+  kubernetes:
+    name: customer-service
+    namespace: ${K8S_NAMESPACE:erp}
+    part-of: erp
+    replicas: 2
+    image-pull-policy: IfNotPresent
+    service-type: ClusterIP
+    service-account: customer-service
+    ports:
+      http:
+        container-port: 8082
+    env:
+      vars:
+        POSTGRES_HOST: postgres
+        POSTGRES_PORT: "5432"
+        RABBITMQ_HOST: rabbitmq
+        # Fixed on purpose: Kubernetes injects POSTGRES_PORT=tcp://ip:port (service links),
+        # which would otherwise override the numeric port.
+        RABBITMQ_PORT: "5672"
+        OTEL_SDK_DISABLED: "false"
+        OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-gateway-collector.observability.svc.cluster.local:4317
+      mapping:
+        POSTGRES_PASSWORD:
+          from-secret: erp-secrets
+          with-key: postgres-password
+        RABBITMQ_PASSWORD:
+          from-secret: erp-secrets
+          with-key: rabbitmq-password
+    liveness-probe:
+      http-action-path: /q/health/live
+    readiness-probe:
+      http-action-path: /q/health/ready
+
+# --- RabbitMQ (quarkus-messaging-rabbitmq, see infra.messaging.RabbitMqPublisher) ---
+rabbitmq-host: ${RABBITMQ_HOST:localhost}
+rabbitmq-port: ${RABBITMQ_PORT:5672}
+rabbitmq-username: ${RABBITMQ_USER:root}
+rabbitmq-password: "${RABBITMQ_PASSWORD:RabbitMQ123!}"
+
+mp:
+  messaging:
+    outgoing:
+      # Publishes with a per-message routing key to the durable topic exchange.
+      customer-events:
+        connector: smallrye-rabbitmq
+        exchange:
+          name: customer.events
+          type: topic
+          durable: true
+  openapi:
+    extensions:
+      smallrye:
+        info:
+          title: Customer Service API
+          version: "1.0"
+          description: Servico responsavel pelo cadastro de clientes (pessoas fisicas e juridicas) dentro do ERP.
+
+customer:
+  outbox:
+    # In-process @Scheduled job, see infra.messaging.OutboxRelayJob.
+    relay-interval: 5s
+
+app:
+  i18n:
+    # Fallback when Accept-Language is absent/unsupported. Bundles: i18n/messages_{pt_BR,en}.properties
+    default-locale: pt-BR
+
+"%dev":
+  quarkus:
+    log:
+      level: INFO

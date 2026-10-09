@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a Java + Node.js monorepo for an ERP system. `catalog-service` and `stock-service` are Java/Quarkus (Maven) microservices at the repository root; `frontend` (Modern.js/React) and `apps/buy-service` (Node/NestJS) are the Node side, orchestrated with Turbo/Yarn workspaces. Services communicate via RabbitMQ events and expose REST APIs.
+This is a Java + Node.js monorepo for an ERP system. `catalog-service`, `stock-service` and `customer-service` are Java/Quarkus (Maven) microservices at the repository root; `frontend` (Modern.js/React) and `apps/buy-service` (Node/NestJS) are the Node side, orchestrated with Turbo/Yarn workspaces. Services communicate via RabbitMQ events and expose REST APIs.
 
 `catalog-service` and `stock-service` were migrated big-bang from an earlier Go implementation (DDD + GORM + a shared `go-common` library). That Go code, `go.work`, and `libs/go-common` have been removed from the working tree; the Go history is still recoverable via `git log`/`git show` if ever needed for behavioral reference. Both new services implement the full spec in `.kiro/specs/catalog-stock-crud/requirements.md` (paginated listings, PUT/PATCH/DELETE with lifecycle and referential-integrity rules, domain events, standardized error responses, transactional outbox).
 
@@ -14,6 +14,7 @@ This is a Java + Node.js monorepo for an ERP system. `catalog-service` and `stoc
 erp/
 ├── catalog-service/       # Java/Quarkus microservice (products, categories) — port 8080
 ├── stock-service/         # Java/Quarkus microservice (stock management) — port 8081
+├── customer-service/      # Java/Quarkus microservice (customers: individuals + companies) — port 8082
 ├── frontend/               # Modern.js/React app — port 3000
 ├── apps/
 │   └── buy-service/       # Node/NestJS microservice — out of scope for the Java migration
@@ -37,7 +38,7 @@ docker compose -f dev.docker-compose.yaml up -d
 # Starts: PostgreSQL 15 (5432), RabbitMQ (5672, UI: 15672), PgAdmin (5050)
 ```
 
-### Java Services (catalog-service & stock-service)
+### Java Services (catalog-service, stock-service & customer-service)
 
 Each service is a standalone Maven/Quarkus project (Java 21). **Use a Java 21 JDK to build/run** — newer JDKs (e.g. 25) currently break the Quarkus/Hibernate bytecode enhancement step (Byte Buddy incompatibility). Point `JAVA_HOME` at a JDK 21 install before running `mvn`.
 
@@ -49,6 +50,7 @@ cd stock-service && mvn quarkus:dev
 # Or via Makefile
 make catalog   # mvn quarkus:dev for catalog-service
 make stock     # mvn quarkus:dev for stock-service
+make customer  # mvn quarkus:dev for customer-service
 make build     # mvn package for both services
 
 # Build a jar directly
@@ -78,7 +80,7 @@ yarn build     # build all Node workspaces
 
 ### Java Microservices — Internal Structure
 
-Both `catalog-service` and `stock-service` follow the same Domain-Driven Design layering (mirroring the DDD split used by the original Go services, reimplemented independently per service — there is no shared Java library):
+`catalog-service`, `stock-service` and `customer-service` follow the same Domain-Driven Design layering (mirroring the DDD split used by the original Go services, reimplemented independently per service — there is no shared Java library):
 
 ```
 src/main/java/software/openlab/<catalog|stock>/
@@ -99,7 +101,7 @@ Key patterns:
 - Repository interfaces are defined in `domain/`, implemented in `infra/persistence/`.
 - Each business operation is its own `@ApplicationScoped` use case class (e.g. `application/usecase/product/UpdateProductUseCase`) injected directly by REST resources and messaging handlers; use cases may compose other use cases (e.g. `UpdateProductUseCase` calls `GetProductByIdUseCase`) instead of duplicating repository lookups.
 - Domain aggregates use Lombok (`@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor`) instead of hand-written boilerplate; a constructor stays hand-written wherever it isn't a pure all-fields assignment (e.g. it calls `super(...)` or computes a field).
-- Public IDs are prefixed and validated (`cat_*`, `prod_*`, `stock_*`, ...) — see each service's `domain/shared`/`domain/<entity>` id records (`CategoryId`, `ProductId`, `StockId`, `ReassignmentId`).
+- Public IDs are prefixed and validated (`category_*`, `product_*`, `stock_*`, `customer_*`, ...) — see each service's `domain/shared`/`domain/<entity>` id records (`CategoryId`, `ProductId`, `StockId`, `ReassignmentId`).
 - Domain events (e.g. `category.created`, `product.updated`) are written to an `outbox_entries` table in the **same transaction** as the aggregate write (`@Transactional` service methods), guaranteeing atomicity. A `@Scheduled` job in `infra/messaging` (the "relay") polls that table and publishes pending entries to RabbitMQ asynchronously — this replaces the Go version's separate `relay` binary with an in-process job, a deliberate simplification.
 - Standardized error responses are produced by JAX-RS `ExceptionMapper`s in `infra/rest/exception`: business errors (400/404/409) return `{"message": "..."}`; bean-validation failures return `{"mensagem": "...", "erros": {...}}`.
 
@@ -112,6 +114,8 @@ Services publish domain events to the RabbitMQ topic exchange `catalog.events` /
 Modern.js 3 (React 19, TypeScript). SSR enabled. Linting via Biome (2-space indent, single quotes, 80-char line width). Uses `@cms/ts-common` for shared types.
 
 **BFF** — `frontend/api/` (Modern.js requires this exact folder name). Each file under `api/lambda/` is a route under `/api` (`catalog/brands/index.ts` → `/api/catalog/brands`; `[id].ts` → `:id`; export `get`/`post`/`put`/`del`). `api/lib/upstream.ts` calls the backends server-side, using `CATALOG_SERVICE_URL` / `STOCK_SERVICE_URL` (cluster DNS in `.devops/k8s/frontend.yaml`, localhost by default). The project is ESM (`"type": "module"`), so relative imports inside `api/` must use the `.ts` extension (`from '../../../lib/upstream.ts'`): `modern dev` loads the TypeScript directly and cannot resolve `.js` → `.ts`, while `rewriteRelativeImportExtensions` (tsconfig) turns it into `.js` in the build output. The browser only talks to `/api/...`, never to the services. The BFF passes the services' JSON through untouched, and the frontend types mirror it exactly: catalog-service serializes in **snake_case** (`brand_id`, `created_at`, `page_size`), so TypeScript types use those names and there is no mapping layer. Nullable fields (e.g. `updated_at`) are typed `string | null`.
+
+**customer-service** — port 8082, schema `customer`, events on `customer.events`. One `customers` table holds both kinds: `type` is `INDIVIDUAL` (CPF) or `COMPANY` (CNPJ) and is immutable after creation; `document` is stored as digits only, unique across both kinds, and validated with the check-digit algorithm (`domain/customer/Document`). Individuals have no trade name / state registration, companies have no birth date (`CustomerDetails.validated` clears them). Addresses are a separate module (`domain/address`, `application/usecase/address`, `AddressResource`), not part of the `Customer` aggregate: they are managed one by one under `/v1/customers/{customerId}/addresses` (`GET` list, `POST`, `PUT /{addressId}`, `DELETE /{addressId}`), IDs are `address_<ULID>`, a customer has up to 10, and `is_default` marks the default — zero or one per customer (use cases clear the previous default; a partial unique index on `customer_addresses` backs it up). The address use cases call `GetCustomerByIdUseCase` for the 404; deleting a customer removes its addresses via `ON DELETE CASCADE`. The frontend mirrors the split: `features/addresses` (panel) is composed into the customer detail route. `PATCH /v1/customers/{id}/status` toggles ACTIVE/INACTIVE. The BFF reaches it through `CUSTOMER_SERVICE_URL`.
 
 **Yarn** — `@modern-js/render` declares `react-server-dom-rspack` as a peer dependency; npm installs peers automatically but Yarn does not, so it is listed explicitly in `frontend/package.json` (without it `yarn dev` fails with `ESModulesLinkingError ... react-server-dom-rspack/client.browser`).
 
