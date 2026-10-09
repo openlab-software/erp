@@ -5,40 +5,20 @@ metadata:
   annotations:
     app.quarkus.io/quarkus-version: 3.20.2.2
     app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-    app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:20 +0000
+    app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:18 +0000
   labels:
-    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/name: customer-service
     app.kubernetes.io/part-of: erp
     app.kubernetes.io/version: 1.0.0-SNAPSHOT
     app.kubernetes.io/managed-by: quarkus
-  name: catalog-service
+  name: customer-service
   namespace: erp
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
-    app.kubernetes.io/name: catalog-service
-    app.kubernetes.io/part-of: erp
-    app.kubernetes.io/version: 1.0.0-SNAPSHOT
-  name: catalog-service-stork-discovery
-  namespace: erp
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - endpoints
-      - services
-    verbs:
-      - get
-      - list
-      - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/name: customer-service
     app.kubernetes.io/part-of: erp
     app.kubernetes.io/version: 1.0.0-SNAPSHOT
   name: view-jobs
@@ -55,10 +35,10 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
-    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/name: customer-service
     app.kubernetes.io/part-of: erp
     app.kubernetes.io/version: 1.0.0-SNAPSHOT
-  name: catalog-service-view-jobs
+  name: customer-service-view-jobs
   namespace: erp
 roleRef:
   kind: Role
@@ -67,25 +47,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     apiGroup: ""
-    name: catalog-service
-    namespace: erp
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    app.kubernetes.io/name: catalog-service
-    app.kubernetes.io/part-of: erp
-    app.kubernetes.io/version: 1.0.0-SNAPSHOT
-  name: catalog-service-stork-discovery
-  namespace: erp
-roleRef:
-  kind: Role
-  apiGroup: rbac.authorization.k8s.io
-  name: catalog-service-stork-discovery
-subjects:
-  - kind: ServiceAccount
-    name: catalog-service
+    name: customer-service
     namespace: erp
 ---
 apiVersion: v1
@@ -94,26 +56,26 @@ metadata:
   annotations:
     app.quarkus.io/quarkus-version: 3.20.2.2
     app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-    app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:20 +0000
+    app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:18 +0000
     prometheus.io/scrape: "true"
     prometheus.io/path: /q/metrics
-    prometheus.io/port: "8080"
+    prometheus.io/port: "8082"
     prometheus.io/scheme: http
   labels:
-    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/name: customer-service
     app.kubernetes.io/part-of: erp
     app.kubernetes.io/version: 1.0.0-SNAPSHOT
     app.kubernetes.io/managed-by: quarkus
-  name: catalog-service
+  name: customer-service
   namespace: erp
 spec:
   ports:
     - name: http
       port: 80
       protocol: TCP
-      targetPort: 8080
+      targetPort: 8082
   selector:
-    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/name: customer-service
     app.kubernetes.io/part-of: erp
     app.kubernetes.io/version: 1.0.0-SNAPSHOT
   type: ClusterIP
@@ -124,40 +86,40 @@ metadata:
   annotations:
     app.quarkus.io/quarkus-version: 3.20.2.2
     app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-    app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:20 +0000
+    app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:18 +0000
     prometheus.io/scrape: "true"
     prometheus.io/path: /q/metrics
-    prometheus.io/port: "8080"
+    prometheus.io/port: "8082"
     prometheus.io/scheme: http
   labels:
-    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/name: customer-service
     app.kubernetes.io/part-of: erp
     app.kubernetes.io/version: 1.0.0-SNAPSHOT
     app.kubernetes.io/managed-by: quarkus
-  name: catalog-service
+  name: customer-service
   namespace: erp
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app.kubernetes.io/version: 1.0.0-SNAPSHOT
       app.kubernetes.io/part-of: erp
-      app.kubernetes.io/name: catalog-service
+      app.kubernetes.io/version: 1.0.0-SNAPSHOT
+      app.kubernetes.io/name: customer-service
   template:
     metadata:
       annotations:
         app.quarkus.io/quarkus-version: 3.20.2.2
         app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-        app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:20 +0000
+        app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:18 +0000
         prometheus.io/scrape: "true"
         prometheus.io/path: /q/metrics
-        prometheus.io/port: "8080"
+        prometheus.io/port: "8082"
         prometheus.io/scheme: http
       labels:
         app.kubernetes.io/managed-by: quarkus
-        app.kubernetes.io/version: 1.0.0-SNAPSHOT
         app.kubernetes.io/part-of: erp
-        app.kubernetes.io/name: catalog-service
+        app.kubernetes.io/version: 1.0.0-SNAPSHOT
+        app.kubernetes.io/name: customer-service
     spec:
       containers:
         - env:
@@ -167,50 +129,50 @@ spec:
                   fieldPath: metadata.namespace
             - name: QUARKUS_FLYWAY_ACTIVE
               value: "false"
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: postgres-password
-                  name: erp-secrets
-            - name: RABBITMQ_HOST
-              value: rabbitmq
             - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
                   key: rabbitmq-password
                   name: erp-secrets
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: postgres-password
+                  name: erp-secrets
             - name: OTEL_SDK_DISABLED
               value: "false"
-            - name: POSTGRES_HOST
-              value: postgres
-            - name: RABBITMQ_PORT
-              value: "5672"
+            - name: RABBITMQ_HOST
+              value: rabbitmq
             - name: POSTGRES_PORT
               value: "5432"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://otel-gateway-collector.observability.svc.cluster.local:4317
-          image: ghcr.io/openlab-software/catalog-service:v1.0.9
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: RABBITMQ_PORT
+              value: "5672"
+          image: ghcr.io/openlab-software/customer-service:v1.0.9
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
             httpGet:
               path: /q/health/live
-              port: 8080
+              port: 8082
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
-          name: catalog-service
+          name: customer-service
           ports:
-            - containerPort: 8080
+            - containerPort: 8082
               name: http
               protocol: TCP
           readinessProbe:
             failureThreshold: 3
             httpGet:
               path: /q/health/ready
-              port: 8080
+              port: 8082
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -220,7 +182,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /q/health/started
-              port: 8080
+              port: 8082
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
@@ -229,16 +191,16 @@ spec:
       initContainers:
         - args:
             - job
-            - catalog-service-flyway-init
+            - customer-service-flyway-init
           image: groundnuty/k8s-wait-for:no-root-v1.7
           imagePullPolicy: Always
           name: wait-for-flyway
-      serviceAccountName: catalog-service
+      serviceAccountName: customer-service
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: catalog-service-flyway-init
+  name: customer-service-flyway-init
   namespace: erp
 spec:
   completionMode: NonIndexed
@@ -247,36 +209,36 @@ spec:
     spec:
       containers:
         - env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: postgres-password
-                  name: erp-secrets
-            - name: RABBITMQ_HOST
-              value: rabbitmq
             - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
                   key: rabbitmq-password
                   name: erp-secrets
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: postgres-password
+                  name: erp-secrets
             - name: OTEL_SDK_DISABLED
               value: "false"
-            - name: POSTGRES_HOST
-              value: postgres
-            - name: RABBITMQ_PORT
-              value: "5672"
+            - name: RABBITMQ_HOST
+              value: rabbitmq
             - name: POSTGRES_PORT
               value: "5432"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://otel-gateway-collector.observability.svc.cluster.local:4317
-            - name: QUARKUS_FLYWAY_ACTIVE
-              value: "true"
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: RABBITMQ_PORT
+              value: "5672"
             - name: QUARKUS_INIT_AND_EXIT
               value: "true"
-          image: ghcr.io/openlab-software/catalog-service:v1.0.9
-          name: catalog-service-flyway-init
+            - name: QUARKUS_FLYWAY_ACTIVE
+              value: "true"
+          image: ghcr.io/openlab-software/customer-service:v1.0.9
+          name: customer-service-flyway-init
       restartPolicy: OnFailure
-      serviceAccountName: catalog-service
+      serviceAccountName: customer-service
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -284,23 +246,23 @@ metadata:
   annotations:
     app.quarkus.io/quarkus-version: 3.20.2.2
     app.quarkus.io/vcs-uri: https://github.com/openlab-software/erp.git
-    app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:20 +0000
+    app.quarkus.io/build-timestamp: 2026-10-09 - 17:20:18 +0000
   labels:
-    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/name: customer-service
     app.kubernetes.io/part-of: erp
     app.kubernetes.io/version: 1.0.0-SNAPSHOT
     app.kubernetes.io/managed-by: quarkus
-  name: catalog-service
+  name: customer-service
   namespace: erp
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: catalog-service
+      app.kubernetes.io/name: customer-service
       app.kubernetes.io/part-of: erp
       app.kubernetes.io/version: 1.0.0-SNAPSHOT
   endpoints:
     - scheme: http
-      targetPort: 8080
+      targetPort: 8082
       path: /q/metrics
       interval: 10s
       honorLabels: true
