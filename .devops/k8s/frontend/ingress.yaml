@@ -24,10 +24,10 @@ spec:
             pathType: Prefix
             backend:
               service: { name: frontend, port: { name: http } }
-    - host: openlab.software
+    - host: erp.openlab.software
       http:
         paths:
-          - path: /erp
+          - path: /
             pathType: Prefix
             backend:
               service: { name: frontend, port: { name: http } }
