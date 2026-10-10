@@ -64,14 +64,18 @@ quarkus:
     image-pull-policy: IfNotPresent
     service-type: ClusterIP
     service-account: customer-service
+    # Métricas coletadas pelo ServiceMonitor quarkus-services do repositório infrastructure
+    prometheus:
+      generate-service-monitor: false
     ports:
       http:
         container-port: 8082
     env:
       vars:
-        POSTGRES_HOST: postgres
+        # Postgres e RabbitMQ são do repositório infrastructure (namespaces database e messaging)
+        POSTGRES_HOST: postgres.database.svc.cluster.local
         POSTGRES_PORT: "5432"
-        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_HOST: rabbitmq.messaging.svc.cluster.local
         # Fixed on purpose: Kubernetes injects POSTGRES_PORT=tcp://ip:port (service links),
         # which would otherwise override the numeric port.
         RABBITMQ_PORT: "5672"

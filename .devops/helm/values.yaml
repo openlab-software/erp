@@ -32,17 +32,11 @@ frontend:
       - erp.localtest.me
       - erp.openlab.software
 
-# Postgres e RabbitMQ dentro do cluster; as senhas vêm do Secret erp-secrets (ExternalSecret)
-infra:
+# Postgres (namespace database) e RabbitMQ (namespace messaging) são do repositório infrastructure.
+# As senhas deles vêm do Bitwarden; o Secret erp-secrets (ExternalSecret) as entrega aos serviços.
+secrets:
   enabled: true
-  postgres:
-    image: postgres:15
-  rabbitmq:
-    image: rabbitmq:3-management
-  externalSecret:
-    secretStore: { name: bitwarden, kind: ClusterSecretStore }
-    refreshInterval: 1h
-
-# ServiceMonitor (Prometheus) e Instrumentation (OpenTelemetry Operator)
-observability:
-  enabled: true
+  # Secret do Bitwarden com a senha inicial (bitwarden_initial_password_secret_id no infrastructure)
+  initialPasswordSecretId: 744291d6-7bba-4255-9a44-b4df00d9d819
+  secretStore: { name: bitwarden, kind: ClusterSecretStore }
+  refreshInterval: 1h

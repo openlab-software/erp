@@ -13,8 +13,9 @@ spec:
       labels:
         app: frontend
       annotations:
-        # OpenTelemetry Operator injeta a auto-instrumentação Node.js (ver observability.yaml)
-        instrumentation.opentelemetry.io/inject-nodejs: "true"
+        # OpenTelemetry Operator injeta a auto-instrumentação Node.js; o Instrumentation "nodejs"
+        # fica no namespace observability (componente opentelemetry do repositório infrastructure)
+        instrumentation.opentelemetry.io/inject-nodejs: "observability/nodejs"
     spec:
       containers:
         - name: frontend

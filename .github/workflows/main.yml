@@ -7,7 +7,7 @@ name: Build and Publish
 #   kubernetes extension (target/kubernetes/kubernetes.yml) with the image tag already set to the
 #   release tag. The chart job embeds it in the chart (files/<service>.yaml) and the chart
 #   templates adjust it at render time (see .devops/helm/templates/java-services.yaml).
-# - frontend and infra: hand-written templates in the chart; the frontend image tag is the
+# - frontend and erp-secrets: hand-written templates in the chart; the frontend image tag is the
 #   chart appVersion.
 
 on:
