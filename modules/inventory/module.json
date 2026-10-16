@@ -1,0 +1,16 @@
+{
+  "name": "inventory",
+  "display_name": "Inventário",
+  "summary": "Armazéns, saldos, reservas, movimentações, contagens, regras de reposição e transferências (recebimentos, entregas e internas).",
+  "category": "Supply Chain",
+  "version": "1.0.0",
+  "depends": ["products"],
+  "integrates_with": ["sales", "purchase"],
+  "services": [{ "name": "stock-service", "port": 8081, "bff_prefix": "stock" }],
+  "menu": [
+    { "group": "Operação", "label": "Estoque", "path": "/estoque", "icon": "warehouse" },
+    { "group": "Operação", "label": "Transferências", "path": "/transferencias", "icon": "transfer" },
+    { "group": "Cadastros", "label": "Armazéns", "path": "/armazens", "icon": "warehouse" },
+    { "group": "Cadastros", "label": "Motivos de movimentação", "path": "/motivos", "icon": "transfer" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "accounting",
+  "display_name": "Financeiro",
+  "summary": "Faturas de clientes e de fornecedores, pagamentos, conciliação com títulos e posição de contas a pagar e receber.",
+  "category": "Finance",
+  "version": "1.0.0",
+  "depends": ["contacts"],
+  "integrates_with": ["sales", "purchase"],
+  "services": [{ "name": "accounting-service", "port": 8086, "bff_prefix": "accounting" }],
+  "menu": [
+    { "group": "Administrativo", "label": "Faturas", "path": "/financeiro", "icon": "wallet" }
+  ]
+}

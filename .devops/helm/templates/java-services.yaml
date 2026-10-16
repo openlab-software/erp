@@ -5,9 +5,11 @@
     - Role "view-jobs" (igual em todo serviço Quarkus) vira "<serviço>-view-jobs", e o roleRef junto;
     - o Job *-flyway-init vira hook Sync do ArgoCD, recriado a cada sync, com prazo.
   O namespace dos recursos passa a ser o da release.
+
+  Quais serviços entram vem dos módulos ligados em values.yaml (`modules`): ver _helpers.tpl.
 */ -}}
-{{- range $name, $svc := .Values.services }}
-{{- if $svc.enabled }}
+{{- range $svc := include "erp.services.enabled" . | fromJsonArray }}
+{{- $name := $svc.name }}
 {{- $raw := $.Files.Get (printf "files/%s.yaml" $name) | replace "\r\n" "\n" }}
 {{- range $doc := splitList "\n---\n" (printf "\n%s" $raw) }}
 {{- $o := fromYaml $doc }}
@@ -33,7 +35,6 @@
 {{- end }}
 ---
 {{ toYaml $o }}
-{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

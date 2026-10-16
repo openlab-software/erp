@@ -106,6 +106,18 @@ public class PanacheStockItemRepository implements StockItemRepository {
         return entities.stream().map(e -> toDomain(StockId.of(e.stock.publicId), e)).toList();
     }
 
+    @Override
+    public PageResult<StockItem> findBelowMinimum(int page, int pageSize) {
+        var query = StockItemEntity.find(
+                "active = true and minValue is not null and currentValue < minValue"
+                        + " order by (currentValue - minValue), catalogProductPublicId");
+        long total = query.count();
+        List<StockItemEntity> entities = query.page(Page.of(page - 1, pageSize)).list();
+        List<StockItem> items = entities.stream()
+                .map(e -> toDomain(StockId.of(e.stock.publicId), e)).toList();
+        return new PageResult<>(items, page, pageSize, total);
+    }
+
     private static StockItem toDomain(StockId stockId, StockItemEntity e) {
         return new StockItem(stockId, ProductId.of(e.catalogProductPublicId), e.minValue, e.currentValue, e.maxValue,
                 e.reservedValue, e.active);

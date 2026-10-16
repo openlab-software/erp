@@ -1,50 +1,44 @@
 import { useLocation, Link } from "@modern-js/runtime/router";
 import styled from "@xstyled/emotion";
+import { useModules } from "@/features/modules";
+import type { ErpModule } from "@/features/modules";
 import { Icon } from "../icon";
 
-const NAV = [
-  {
-    group: "Operação",
-    items: [
-      { path: "/", label: "Dashboard", icon: "dashboard" },
-      { path: "/produtos", label: "Produtos", icon: "box" },
-      { path: "/estoque", label: "Estoque", icon: "warehouse" },
-    ],
-  },
-  {
-    group: "Cadastros",
-    items: [
-      { path: "/clientes", label: "Clientes", icon: "users" },
-      { path: "/categorias", label: "Categorias", icon: "stack" },
-      { path: "/marcas", label: "Marcas", icon: "stack" },
-      { path: "/fornecedores", label: "Fornecedores", icon: "factory" },
-      { path: "/unidades", label: "Unidades de medida", icon: "box" },
-      { path: "/armazens", label: "Armazéns", icon: "warehouse" },
-      { path: "/motivos", label: "Motivos de movimentação", icon: "transfer" },
-    ],
-  },
-  {
-    group: "Comercial",
-    items: [
-      { path: "/vendas", label: "Vendas", icon: "cart", badge: "8" },
-      { path: "/vendas/novo", label: "Novo pedido", icon: "plus" },
-    ],
-  },
-  {
-    group: "Administrativo",
-    items: [
-      { path: "/financeiro", label: "Financeiro", icon: "wallet" },
-      { path: "/producao", label: "Produção", icon: "factory" },
-      { path: "/relatorios", label: "Relatórios", icon: "chart" },
-    ],
-  },
-  {
-    group: "Sistema",
-    items: [
-      { path: "/configuracoes", label: "Configurações", icon: "settings" },
-    ],
-  },
-];
+/** Always there, whatever modules are installed. */
+const DASHBOARD = { path: "/", label: "Dashboard", icon: "dashboard" };
+const SETTINGS = { path: "/configuracoes", label: "Configurações", icon: "settings" };
+
+/** Order of the menu sections; a module can bring its own group, which then goes before "Administrativo". */
+const GROUP_ORDER = ["Operação", "Comercial", "Suprimentos", "Cadastros", "Administrativo"];
+
+interface NavGroup {
+  group: string;
+  items: { path: string; label: string; icon: string }[];
+}
+
+/**
+ * The menu is built from the manifests of the installed modules (modules/<name>/module.json), so a deployment
+ * with only some modules shows only their pages.
+ */
+export function buildNav(modules: ErpModule[]): NavGroup[] {
+  const groups = new Map<string, NavGroup["items"]>();
+  groups.set("Operação", [DASHBOARD]);
+  for (const module of modules) {
+    for (const item of module.menu) {
+      const items = groups.get(item.group) ?? [];
+      if (!items.some((i) => i.path === item.path)) items.push(item);
+      groups.set(item.group, items);
+    }
+  }
+  const rank = (group: string) => {
+    const i = GROUP_ORDER.indexOf(group);
+    return i === -1 ? GROUP_ORDER.length - 1.5 : i;
+  };
+  const ordered = [...groups.entries()]
+    .sort(([a], [b]) => rank(a) - rank(b))
+    .map(([group, items]) => ({ group, items }));
+  return [...ordered, { group: "Sistema", items: [SETTINGS] }];
+}
 
 const Side = styled.aside`
   background: var(--side-bg);
@@ -215,18 +209,6 @@ const NavIcon = styled.span<{ $active?: boolean }>`
     $active ? "var(--accent-mid)" : "var(--side-ink-dim)"};
 `;
 
-const NavBadge = styled.span`
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--side-ink);
-  padding: 1px 6px;
-  border-radius: 8px;
-  min-width: 18px;
-  text-align: center;
-`;
-
 const Foot = styled.div<{ $collapsed?: boolean }>`
   border-top: 1px solid var(--side-line);
   padding: 12px;
@@ -274,6 +256,8 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed }: SidebarProps) {
   const location = useLocation();
+  const modules = useModules();
+  const nav = buildNav(modules.data ?? []);
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -341,7 +325,7 @@ export function Sidebar({ collapsed }: SidebarProps) {
       )}
 
       <Nav>
-        {NAV.map(({ group, items }) => (
+        {nav.map(({ group, items }) => (
           <div key={group}>
             {!collapsed && <Section>{group}</Section>}
             {items.map((item) => {
@@ -357,9 +341,6 @@ export function Sidebar({ collapsed }: SidebarProps) {
                       <Icon name={item.icon} />
                     </NavIcon>
                     {!collapsed && <span>{item.label}</span>}
-                    {!collapsed && item.badge && (
-                      <NavBadge>{item.badge}</NavBadge>
-                    )}
                   </NavItem>
                 </Link>
               );

@@ -1,13 +1,19 @@
 # Serviços Quarkus: o manifest de cada um é gerado no build (extensão kubernetes do Quarkus)
 # e a CI o coloca em files/<serviço>.yaml antes do `helm package` (não é versionado).
 # A tag da imagem já vem dentro desse manifest.
-services:
-  catalog-service:
-    enabled: true
-  stock-service:
-    enabled: true
-  customer-service:
-    enabled: true
+# Módulos do ERP (aplicativos, como no Odoo). Cada módulo agrupa os microserviços que dependem entre si e é
+# descrito em modules/<nome>/module.json no repositório (dependências em `depends`, serviços em `services`).
+# Ligue só os que o cliente contratou: as dependências obrigatórias entram sozinhas (ligar `sales` liga
+# `contacts` e `products`). Os módulos listados em `integrates_with` conversam por eventos quando AMBOS
+# estão instalados e não são necessários um ao outro (ex.: `sales` funciona sem `inventory`).
+modules:
+  contacts:   { enabled: true }   # customer-service
+  products:   { enabled: true }   # catalog-service
+  inventory:  { enabled: true }   # stock-service
+  crm:        { enabled: true }   # crm-service
+  sales:      { enabled: true }   # sales-service
+  purchase:   { enabled: true }   # purchase-service
+  accounting: { enabled: true }   # accounting-service
 
 # O Job *-flyway-init é recriado a cada sync (hook do ArgoCD, Jobs são imutáveis) e tem prazo:
 # se o pod não sobe (ex.: secret ausente), o Job falha em vez de deixar o sync pendurado.
@@ -21,10 +27,12 @@ frontend:
     # Vazio = usa .Chart.AppVersion (a tag da release, definida pela CI no package)
     tag: ""
     pullPolicy: IfNotPresent
-  ingress:
+  httproute:
     enabled: true
-    # Mesma classe do ingress-nginx instalado pelo repositório infrastructure
-    className: nginx
+    # Gateway compartilhado (Istio) criado pelo componente `gateway` do repositório infrastructure
+    gateway:
+      name: main
+      namespace: gateway-system
     hosts:
       # prod (MetalLB + proxy)
       - erp.patrick.dev.br

@@ -47,4 +47,10 @@ public interface StockItemRepository {
      * NotFoundException — a product with no tracked balance anywhere is a valid, non-error state.
      */
     List<StockItem> findAllByProduct(ProductId productId);
+
+    /**
+     * Active items, in any stock, whose balance is below their minimum (reordering rule triggered),
+     * most below first.
+     */
+    PageResult<StockItem> findBelowMinimum(int page, int pageSize);
 }

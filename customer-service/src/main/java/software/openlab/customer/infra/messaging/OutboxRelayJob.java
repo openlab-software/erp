@@ -35,19 +35,24 @@ public class OutboxRelayJob {
                 .list();
 
         for (OutboxEntry entry : pending) {
-            publishEntry(entry);
+            if (!publishEntry(entry)) {
+                break; // broker unavailable: retry on the next tick, in order
+            }
         }
     }
 
-    private void publishEntry(OutboxEntry entry) {
+    /** @return false when the broker did not take the message; the entry stays PENDING for the next tick. */
+    private boolean publishEntry(OutboxEntry entry) {
         try {
             rabbitMqPublisher.publish(entry.routingKey, entry.payload);
             entry.status = OutboxEntry.PUBLISHED;
             entry.publishedAt = Instant.now();
+            entry.error = null;
+            return true;
         } catch (Exception e) {
-            entry.status = OutboxEntry.FAILED;
             entry.error = e.getMessage();
             LOG.errorf(e, "[Outbox] publish failed — id=%d routingKey=%s", entry.id, entry.routingKey);
+            return false;
         }
     }
 }

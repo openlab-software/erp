@@ -10,6 +10,9 @@ public interface StockRepository {
 
     Optional<Stock> findById(StockId stockId);
 
+    /** The stock created first (the default warehouse of the automatic pickings). */
+    Optional<Stock> findFirstCreated();
+
     boolean existsByDescriptionIgnoreCase(String description);
 
     boolean existsByDescriptionIgnoreCaseExcluding(String description, StockId excludeStockId);

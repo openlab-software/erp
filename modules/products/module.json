@@ -1,0 +1,17 @@
+{
+  "name": "products",
+  "display_name": "Produtos",
+  "summary": "Catálogo de produtos, categorias, marcas, fornecedores e unidades de medida compartilhados pelos demais aplicativos.",
+  "category": "Base",
+  "version": "1.0.0",
+  "depends": [],
+  "integrates_with": [],
+  "services": [{ "name": "catalog-service", "port": 8080, "bff_prefix": "catalog" }],
+  "menu": [
+    { "group": "Cadastros", "label": "Produtos", "path": "/produtos", "icon": "box" },
+    { "group": "Cadastros", "label": "Categorias", "path": "/categorias", "icon": "stack" },
+    { "group": "Cadastros", "label": "Marcas", "path": "/marcas", "icon": "stack" },
+    { "group": "Cadastros", "label": "Fornecedores", "path": "/fornecedores", "icon": "factory" },
+    { "group": "Cadastros", "label": "Unidades de medida", "path": "/unidades", "icon": "box" }
+  ]
+}

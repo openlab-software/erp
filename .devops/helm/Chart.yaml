@@ -1,6 +1,6 @@
 apiVersion: v2
 name: erp
-description: ERP da OpenLab (catalog, stock, customer e frontend)
+description: "ERP modular da OpenLab: módulos (contatos, produtos, inventário, CRM, vendas, compras e financeiro) descritos em modules/, mais o frontend"
 type: application
 # version/appVersion são sobrescritos pela CI no `helm package` (a partir da tag vX.Y.Z)
 version: 0.0.0

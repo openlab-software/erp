@@ -5,12 +5,18 @@ import { HttpError } from '@modern-js/bff-core';
  * browser). In Kubernetes they are the cluster DNS names of the Services, e.g.
  * http://catalog-service.erp.svc.cluster.local — see .devops/helm/templates/frontend.yaml.
  * Locally they come from frontend/.env.development (the `make catalog` / `make stock` dev servers).
- * There are no defaults: all variables must be set.
+ * There are no defaults. A variable is only set for the services of the modules that are installed (see
+ * modules/README.md and .devops/helm/templates/frontend.yaml); calling a service of a module that is not
+ * installed answers 404 "module not installed" instead of failing on a bad URL.
  */
 const upstreams = {
   catalog: process.env.CATALOG_SERVICE_URL,
   stock: process.env.STOCK_SERVICE_URL,
   customer: process.env.CUSTOMER_SERVICE_URL,
+  crm: process.env.CRM_SERVICE_URL,
+  sales: process.env.SALES_SERVICE_URL,
+  purchase: process.env.PURCHASE_SERVICE_URL,
+  accounting: process.env.ACCOUNTING_SERVICE_URL,
 } as const;
 
 export type Upstream = keyof typeof upstreams;
@@ -32,7 +38,11 @@ export async function upstreamRequest<T>(
   path: string,
   { query, body, form, text }: RequestOptions = {},
 ): Promise<T> {
-  const url = new URL(`${upstreams[service]}${path}`);
+  const base = upstreams[service];
+  if (!base) {
+    throw new HttpError(404, `module not installed: ${service}-service`);
+  }
+  const url = new URL(`${base}${path}`);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== null && value !== '') {
       url.searchParams.set(key, String(value));

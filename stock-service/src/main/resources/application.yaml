@@ -167,11 +167,41 @@ mp:
         routing-keys: product.created,product.updated,product.deleted
         max-outstanding-messages: 10
         failure-strategy: reject
+      # Optional integrations (see infra.messaging.OrderEventsConsumer): confirmed sales / purchase orders create a
+      # delivery / receipt. Each consumer declares the producer's exchange itself, so inventory starts the same
+      # whether or not the sales / purchase modules are deployed.
+      sales-events:
+        connector: smallrye-rabbitmq
+        exchange:
+          name: sales.events
+          type: topic
+          durable: true
+        queue:
+          name: stock-subscriber-sales
+          durable: true
+        routing-keys: sales_order.confirmed,sales_order.cancelled
+        max-outstanding-messages: 10
+        failure-strategy: reject
+      purchase-events:
+        connector: smallrye-rabbitmq
+        exchange:
+          name: purchase.events
+          type: topic
+          durable: true
+        queue:
+          name: stock-subscriber-purchase
+          durable: true
+        routing-keys: purchase_order.confirmed,purchase_order.cancelled
+        max-outstanding-messages: 10
+        failure-strategy: reject
 
 stock:
   outbox:
     relay:
       interval: 5s
+  integration:
+    # Stock (stock_<ULID>) that the automatic deliveries / receipts use; empty = the first stock created.
+    default-stock: ${STOCK_DEFAULT_STOCK:}
 
 app:
   i18n:

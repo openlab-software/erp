@@ -37,6 +37,12 @@ public class PanacheStockRepository implements StockRepository {
     }
 
     @Override
+    public Optional<Stock> findFirstCreated() {
+        return StockEntity.<StockEntity>findAll(Sort.ascending("createdAt")).firstResultOptional()
+                .map(PanacheStockRepository::toDomain);
+    }
+
+    @Override
     public Optional<Stock> findById(StockId stockId) {
         return StockEntity.<StockEntity>find("publicId", stockId.toString())
                 .firstResultOptional()

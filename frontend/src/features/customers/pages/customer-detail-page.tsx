@@ -35,11 +35,11 @@ const Grid = styled.div`
 
 interface CustomerDetailPageProps {
   customerId: string;
-  /** The customer's addresses (owned by the addresses feature), rendered under the data cards. */
-  addresses?: ReactNode;
+  /** Panels owned by other features (addresses, contact persons), rendered under the data cards. */
+  panels?: ReactNode;
 }
 
-export function CustomerDetailPage({ customerId, addresses }: CustomerDetailPageProps) {
+export function CustomerDetailPage({ customerId, panels }: CustomerDetailPageProps) {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const query = useCustomer(customerId);
@@ -174,7 +174,7 @@ export function CustomerDetailPage({ customerId, addresses }: CustomerDetailPage
         </Card>
       </Grid>
 
-      {addresses}
+      {panels}
 
       <CustomerFormDialog
         key={form.key}

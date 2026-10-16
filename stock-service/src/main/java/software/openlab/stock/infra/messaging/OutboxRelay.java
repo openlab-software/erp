@@ -34,19 +34,24 @@ public class OutboxRelay {
                 .list();
 
         for (OutboxEntryEntity entry : pending) {
-            publishEntry(entry);
+            if (!publishEntry(entry)) {
+                break; // broker unavailable: retry on the next tick, in order
+            }
         }
     }
 
-    private void publishEntry(OutboxEntryEntity entry) {
+    /** @return false when the broker did not take the message; the entry stays PENDING for the next tick. */
+    private boolean publishEntry(OutboxEntryEntity entry) {
         try {
             publisher.publish(entry.routingKey, entry.payload);
             entry.status = OutboxEntryEntity.PUBLISHED;
             entry.publishedAt = Instant.now();
+            entry.error = null;
+            return true;
         } catch (Exception e) {
             LOG.errorf(e, "failed to publish outbox entry id=%d routing_key=%s", entry.id, entry.routingKey);
-            entry.status = OutboxEntryEntity.FAILED;
             entry.error = e.getMessage();
+            return false;
         }
     }
 }

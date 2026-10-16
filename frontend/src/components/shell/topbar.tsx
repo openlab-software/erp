@@ -2,25 +2,27 @@ import { useLocation } from "@modern-js/runtime/router";
 import styled from "@xstyled/emotion";
 import { Icon } from "../icon";
 import { useToast } from "@/contexts/toast-context";
+import { useModules } from "@/features/modules";
+import type { ErpModule } from "@/features/modules";
 
-const CRUMB_LABELS: Record<string, string[]> = {
+/** Pages that are not in a module's menu. */
+const STATIC_CRUMBS: Record<string, string[]> = {
   "/": ["Operação", "Dashboard"],
-  "/produtos": ["Operação", "Produtos"],
-  "/estoque": ["Operação", "Estoque"],
-  "/clientes": ["Cadastros", "Clientes"],
-  "/categorias": ["Cadastros", "Categorias"],
-  "/marcas": ["Cadastros", "Marcas"],
-  "/fornecedores": ["Cadastros", "Fornecedores"],
-  "/unidades": ["Cadastros", "Unidades de medida"],
-  "/armazens": ["Cadastros", "Armazéns"],
-  "/motivos": ["Cadastros", "Motivos de movimentação"],
-  "/vendas": ["Comercial", "Vendas"],
-  "/vendas/novo": ["Comercial", "Novo pedido"],
-  "/financeiro": ["Administrativo", "Financeiro"],
-  "/producao": ["Administrativo", "Produção"],
-  "/relatorios": ["Administrativo", "Relatórios"],
   "/configuracoes": ["Sistema", "Configurações"],
 };
+
+/**
+ * "Group > Page" of the current URL: the menu item (from the installed modules' manifests) whose path is the
+ * longest prefix of it, plus "Detalhe" / "Novo" for pages below that item.
+ */
+function crumbsFor(pathname: string, modules: ErpModule[]): string[] {
+  if (STATIC_CRUMBS[pathname]) return STATIC_CRUMBS[pathname];
+  const items = modules.flatMap((m) => m.menu).sort((a, b) => b.path.length - a.path.length);
+  const item = items.find((i) => pathname === i.path || pathname.startsWith(`${i.path}/`));
+  if (!item) return ["—"];
+  if (pathname === item.path) return [item.group, item.label];
+  return [item.group, item.label, pathname.endsWith("/novo") ? "Novo" : "Detalhe"];
+}
 
 const TopbarWrap = styled.header`
   height: 56px;
@@ -117,14 +119,8 @@ export function Topbar({ onToggleSide }: TopbarProps) {
 
   const pathname = location.pathname;
 
-  const crumbs = (() => {
-    if (CRUMB_LABELS[pathname]) return CRUMB_LABELS[pathname];
-    if (pathname.startsWith("/produtos/"))
-      return ["Operação", "Produtos", "Detalhe"];
-    if (pathname.startsWith("/clientes/"))
-      return ["Cadastros", "Clientes", "Detalhe"];
-    return ["—"];
-  })();
+  const modules = useModules();
+  const crumbs = crumbsFor(pathname, modules.data ?? []);
 
   return (
     <TopbarWrap>

@@ -1,0 +1,13 @@
+{
+  "name": "sales",
+  "display_name": "Vendas",
+  "summary": "Cotações e pedidos de venda com linhas, descontos, confirmação e acompanhamento de entrega e faturamento.",
+  "category": "Sales",
+  "version": "1.0.0",
+  "depends": ["contacts", "products"],
+  "integrates_with": ["crm", "inventory", "accounting"],
+  "services": [{ "name": "sales-service", "port": 8084, "bff_prefix": "sales" }],
+  "menu": [
+    { "group": "Comercial", "label": "Pedidos de venda", "path": "/vendas", "icon": "cart" }
+  ]
+}

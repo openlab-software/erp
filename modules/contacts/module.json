@@ -1,0 +1,13 @@
+{
+  "name": "contacts",
+  "display_name": "Contatos",
+  "summary": "Cadastro único de clientes (pessoas físicas e jurídicas), endereços e pessoas de contato.",
+  "category": "Base",
+  "version": "1.0.0",
+  "depends": [],
+  "integrates_with": [],
+  "services": [{ "name": "customer-service", "port": 8082, "bff_prefix": "customer" }],
+  "menu": [
+    { "group": "Cadastros", "label": "Clientes", "path": "/clientes", "icon": "users" }
+  ]
+}

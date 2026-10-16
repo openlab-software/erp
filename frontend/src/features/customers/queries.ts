@@ -78,3 +78,14 @@ export const useChangeCustomerStatus = () =>
 
 export const useDeleteCustomer = () =>
   useCustomerMutation((id: string) => http<Success>(url(id), { method: "DELETE" }));
+
+/** Type-ahead search for pickers: active customers matching `q` (name, document or e-mail); waits for a term. */
+export const useCustomerSearch = (q: string) =>
+  useQuery({
+    queryKey: [...customerKeys.all, "search", q],
+    queryFn: () =>
+      http<Page<Customer>>(`${BASE}${toSearch({ q, status: "ACTIVE", page_size: 8 })}`),
+    enabled: q.length > 0,
+    placeholderData: keepPreviousData,
+    select: (page) => page.data,
+  });
