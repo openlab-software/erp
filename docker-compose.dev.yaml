@@ -1,0 +1,41 @@
+# Dependências para rodar os serviços em dev (mvn quarkus:dev).
+# Credenciais e portas batem com os defaults dos application.yaml.
+#   docker compose -f docker-compose.dev.yaml up -d
+name: erp-dev
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: Postgres123!
+      POSTGRES_DB: erp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d erp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: RabbitMQ123!
+    ports:
+      - "5672:5672"
+      - "15672:15672" # painel de administração
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+volumes:
+  postgres-data:
+  rabbitmq-data:

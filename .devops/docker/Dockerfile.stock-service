@@ -16,5 +16,5 @@ COPY --from=build --chown=1001 /workspace/target/quarkus-app/*.jar /deployments/
 COPY --from=build --chown=1001 /workspace/target/quarkus-app/app/ /deployments/app/
 COPY --from=build --chown=1001 /workspace/target/quarkus-app/quarkus/ /deployments/quarkus/
 USER 1001
-EXPOSE 8081
+EXPOSE 8181
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /deployments/quarkus-run.jar"]

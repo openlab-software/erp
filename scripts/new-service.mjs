@@ -51,7 +51,7 @@ const cap = (s) => s[0].toUpperCase() + s.slice(1);
 
 function transform(text) {
   return text
-    .replaceAll('8082', port)
+    .replaceAll('8182', port)
     .replaceAll('Customer Service API', `${cap(pkg)} Service API`)
     .replace(/description: .*cadastro de clientes.*/, `description: ${title}`)
     .replaceAll('customer', pkg)

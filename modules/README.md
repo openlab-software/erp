@@ -63,7 +63,7 @@ fracionária sobe para o inteiro seguinte); e a entrega/recebimento automático 
   "version": "1.0.0",
   "depends": ["contacts", "products"],
   "integrates_with": ["crm", "inventory", "accounting"],
-  "services": [{ "name": "sales-service", "port": 8084, "bff_prefix": "sales" }],
+  "services": [{ "name": "sales-service", "port": 8184, "bff_prefix": "sales" }],
   "menu": [{ "group": "Comercial", "label": "Pedidos de venda", "path": "/vendas", "icon": "cart" }]
 }
 ```

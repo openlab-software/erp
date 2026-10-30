@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "depends": [],
   "integrates_with": [],
-  "services": [{ "name": "customer-service", "port": 8082, "bff_prefix": "customer" }],
+  "services": [{ "name": "customer-service", "port": 8182, "bff_prefix": "customer" }],
   "menu": [
     { "group": "Cadastros", "label": "Clientes", "path": "/clientes", "icon": "users" }
   ]

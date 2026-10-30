@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "depends": ["contacts"],
   "integrates_with": ["sales"],
-  "services": [{ "name": "crm-service", "port": 8083, "bff_prefix": "crm" }],
+  "services": [{ "name": "crm-service", "port": 8183, "bff_prefix": "crm" }],
   "menu": [
     { "group": "Comercial", "label": "Pipeline", "path": "/crm", "icon": "chart" }
   ]

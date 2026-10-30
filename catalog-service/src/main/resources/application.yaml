@@ -2,7 +2,7 @@ quarkus:
   application:
     name: catalog-service
   http:
-    port: 8080
+    port: 8180
 
   # --- Postgres / Hibernate ---
   # --- Observabilidade (infrastructure: componentes monitoring, loki, tempo, opentelemetry) ---
@@ -51,16 +51,6 @@ quarkus:
     path: /docs
     always-include: true
 
-  # --- Stork (service discovery / client-side load balancing) ---
-  # Resolves other services by their Kubernetes Service name (e.g. stork://stock-service).
-  stork:
-    stock-service:
-      service-discovery:
-        type: kubernetes
-        k8s-namespace: ${K8S_NAMESPACE:erp}
-      load-balancer:
-        type: round-robin
-
   # --- Kubernetes (manifests generated at build into target/kubernetes) ---
   container-image:
     group: openlab
@@ -78,7 +68,7 @@ quarkus:
       generate-service-monitor: false
     ports:
       http:
-        container-port: 8080
+        container-port: 8180
     env:
       vars:
         # Postgres e RabbitMQ são do repositório infrastructure (namespaces database e messaging)
@@ -101,25 +91,6 @@ quarkus:
       http-action-path: /q/health/live
     readiness-probe:
       http-action-path: /q/health/ready
-    # Stork's Kubernetes discovery reads Services/Endpoints.
-    rbac:
-      service-accounts:
-        catalog-service:
-          namespace: ${K8S_NAMESPACE:erp}
-      roles:
-        catalog-service-stork-discovery:
-          policy-rules:
-            "0":
-              api-groups: ""
-              resources: endpoints,services
-              verbs: get,list,watch
-      role-bindings:
-        catalog-service-stork-discovery:
-          role-name: catalog-service-stork-discovery
-          subjects:
-            catalog-service:
-              kind: ServiceAccount
-              namespace: ${K8S_NAMESPACE:erp}
 
 # --- RabbitMQ (quarkus-messaging-rabbitmq, see infra.messaging.RabbitMqPublisher) ---
 rabbitmq-host: ${RABBITMQ_HOST:localhost}
@@ -157,18 +128,8 @@ app:
 
 "%dev":
   quarkus:
+    # Dev Services de observabilidade (LGTM) exigem Docker e nada os consome; o OTel fica desligado em dev.
+    observability:
+      enabled: false
     log:
       level: INFO
-    stork:
-      stock-service:
-        service-discovery:
-          type: static
-          address-list: localhost:8081
-
-"%test":
-  quarkus:
-    stork:
-      stock-service:
-        service-discovery:
-          type: static
-          address-list: localhost:8081

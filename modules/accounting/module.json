@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "depends": ["contacts"],
   "integrates_with": ["sales", "purchase"],
-  "services": [{ "name": "accounting-service", "port": 8086, "bff_prefix": "accounting" }],
+  "services": [{ "name": "accounting-service", "port": 8186, "bff_prefix": "accounting" }],
   "menu": [
     { "group": "Administrativo", "label": "Faturas", "path": "/financeiro", "icon": "wallet" }
   ]

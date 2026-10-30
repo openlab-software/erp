@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "depends": ["products"],
   "integrates_with": ["inventory", "accounting"],
-  "services": [{ "name": "purchase-service", "port": 8085, "bff_prefix": "purchase" }],
+  "services": [{ "name": "purchase-service", "port": 8185, "bff_prefix": "purchase" }],
   "menu": [
     { "group": "Suprimentos", "label": "Ordens de compra", "path": "/compras", "icon": "cart" }
   ]

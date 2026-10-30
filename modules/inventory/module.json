@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "depends": ["products"],
   "integrates_with": ["sales", "purchase"],
-  "services": [{ "name": "stock-service", "port": 8081, "bff_prefix": "stock" }],
+  "services": [{ "name": "stock-service", "port": 8181, "bff_prefix": "stock" }],
   "menu": [
     { "group": "Operação", "label": "Estoque", "path": "/estoque", "icon": "warehouse" },
     { "group": "Operação", "label": "Transferências", "path": "/transferencias", "icon": "transfer" },

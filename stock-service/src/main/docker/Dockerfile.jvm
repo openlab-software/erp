@@ -6,7 +6,7 @@
 #   docker build -f src/main/docker/Dockerfile.jvm -t stock-service-jvm .
 #
 # Run:
-#   docker run -i --rm -p 8081:8081 \
+#   docker run -i --rm -p 8181:8181 \
 #     -e POSTGRES_HOST=... -e POSTGRES_PORT=... -e POSTGRES_USER=... \
 #     -e POSTGRES_PASSWORD=... -e POSTGRES_DATABASE=... \
 #     -e RABBITMQ_HOST=... -e RABBITMQ_PORT=... -e RABBITMQ_USER=... -e RABBITMQ_PASSWORD=... \
@@ -21,7 +21,7 @@ COPY --chown=185 target/quarkus-app/*.jar /deployments/
 COPY --chown=185 target/quarkus-app/app/ /deployments/app/
 COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 
-EXPOSE 8081
+EXPOSE 8181
 USER 185
 
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0"

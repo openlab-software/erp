@@ -2,7 +2,7 @@ quarkus:
   application:
     name: sales-service
   http:
-    port: 8084
+    port: 8184
 
   # --- Observabilidade (infrastructure: componentes monitoring, loki, tempo, opentelemetry) ---
   # Métricas: Micrometer em /q/metrics, coletado pelo ServiceMonitor (.devops/helm/templates/observability.yaml).
@@ -69,7 +69,7 @@ quarkus:
       generate-service-monitor: false
     ports:
       http:
-        container-port: 8084
+        container-port: 8184
     env:
       vars:
         # Postgres e RabbitMQ sao do repositorio infrastructure (namespaces database e messaging)
@@ -157,5 +157,8 @@ app:
 
 "%dev":
   quarkus:
+    # Dev Services de observabilidade (LGTM) exigem Docker e nada os consome; o OTel fica desligado em dev.
+    observability:
+      enabled: false
     log:
       level: INFO
